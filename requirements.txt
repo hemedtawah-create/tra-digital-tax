@@ -1,0 +1,3 @@
+# TRA Digital Tax Backend - Python Requirements
+# Hakuna vifaa vya ziada vinavyohitajika - Python standard library tu
+# sqlite3, http.server, threading, json, hashlib - zote zimejengwa ndani ya Python
