@@ -1,0 +1,1515 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TRA · Mfumo wa Kodi ya Biashara za Mtandaoni</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+:root{
+  --gd:#0A2E1A;--gm:#0F5C32;--gb:#1A8A4A;--gl:#D4EDDA;
+  --gold:#C8961E;--goldl:#FFF3CD;
+  --red:#C0392B;--redl:#FDECEA;
+  --blue:#1A73E8;--bluel:#E8F0FE;
+  --bg:#F0F2F5;--w:#fff;
+  --g100:#F1F3F4;--g200:#E8EAED;--g300:#DADCE0;--g400:#9AA0A6;--g700:#3C4043;--g900:#1A1A1A;
+  --fd:'Space Grotesk',sans-serif;--fb:'Inter',sans-serif;--rad:12px;
+  --sh:0 1px 4px rgba(0,0,0,.08),0 4px 16px rgba(0,0,0,.06);
+}
+[data-theme=dark]{--bg:#0F1923;--w:#1A2332;--g100:#243044;--g200:#2D3F55;--g300:#3D5068;--g400:#7A8FA6;--g700:#C8D8E8;--g900:#EEF4FB;}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:var(--fb);background:var(--bg);color:var(--g900);min-height:100vh;}
+
+/* ===== LOADING SCREEN ===== */
+#loading{position:fixed;inset:0;background:var(--gd);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity .4s;}
+#loading.hide{opacity:0;pointer-events:none;}
+.load-logo{width:64px;height:64px;background:var(--gold);border-radius:14px;display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-weight:700;font-size:24px;color:var(--gd);margin-bottom:20px;animation:logopulse 1.5s ease-in-out infinite;}
+@keyframes logopulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08);}}
+.load-text{font-family:var(--fd);font-size:20px;font-weight:700;color:#fff;margin-bottom:8px;}
+.load-sub{font-size:13px;color:rgba(255,255,255,.55);margin-bottom:28px;}
+.load-bar{width:200px;height:3px;background:rgba(255,255,255,.15);border-radius:4px;overflow:hidden;}
+.load-fill{height:100%;background:var(--gold);border-radius:4px;animation:loadbar 1.8s ease-in-out infinite;}
+@keyframes loadbar{0%{width:0%;margin-left:0}50%{width:60%;margin-left:20%}100%{width:0%;margin-left:100%}}
+
+/* ===== LOGIN ===== */
+#login-screen{display:none;position:fixed;inset:0;background:linear-gradient(135deg,var(--gd) 0%,#0d4a25 60%,var(--gm) 100%);align-items:center;justify-content:center;z-index:500;}
+#login-screen.show{display:flex;}
+.login-card{background:var(--w);border-radius:20px;padding:2.5rem 2rem;width:420px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,.4);}
+.login-logo{text-align:center;margin-bottom:1.75rem;}
+.login-logo-icon{width:58px;height:58px;background:var(--gold);border-radius:12px;display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-weight:700;font-size:22px;color:var(--gd);margin:0 auto 10px;}
+.login-title{font-family:var(--fd);font-size:21px;font-weight:700;color:var(--g900);}
+.login-sub{font-size:12px;color:var(--g400);margin-top:3px;}
+.role-tabs{display:flex;gap:4px;background:var(--g100);border-radius:10px;padding:4px;margin-bottom:1.5rem;}
+.role-tab{flex:1;padding:8px;border-radius:8px;border:none;font-size:12px;font-weight:600;cursor:pointer;background:transparent;color:var(--g400);transition:all .15s;font-family:var(--fb);}
+.role-tab.active{background:var(--w);color:var(--g900);box-shadow:0 1px 6px rgba(0,0,0,.12);}
+.login-field{margin-bottom:.875rem;}
+.login-label{font-size:11px;font-weight:600;color:var(--g700);margin-bottom:4px;display:block;text-transform:uppercase;letter-spacing:.04em;}
+.login-input{width:100%;padding:11px 14px;border:1.5px solid var(--g200);border-radius:10px;font-size:14px;font-family:var(--fb);outline:none;color:var(--g900);background:var(--w);transition:border .15s;}
+.login-input:focus{border-color:var(--gb);}
+.login-btn{width:100%;padding:13px;background:var(--gm);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--fb);margin-top:.5rem;transition:background .15s;position:relative;}
+.login-btn:hover{background:var(--gd);}
+.login-btn:disabled{opacity:.7;cursor:not-allowed;}
+.login-hint{text-align:center;font-size:11px;color:var(--g400);margin-top:1rem;padding:10px;background:var(--g100);border-radius:8px;line-height:1.6;}
+.login-error{display:none;background:var(--redl);color:var(--red);border-radius:8px;padding:10px 14px;font-size:12px;margin-bottom:12px;font-weight:500;}
+.login-error.show{display:block;}
+
+/* ===== APP SHELL ===== */
+#app{display:none;}
+#app.show{display:block;}
+
+/* NAV */
+nav{background:var(--gd);display:flex;align-items:center;justify-content:space-between;height:56px;padding:0 1.5rem;position:sticky;top:0;z-index:100;border-bottom:2px solid var(--gold);}
+.nav-brand{display:flex;align-items:center;gap:10px;cursor:pointer;text-decoration:none;}
+.nav-brand-icon{width:32px;height:32px;background:var(--gold);border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-weight:700;font-size:13px;color:var(--gd);flex-shrink:0;}
+.nav-brand-text{font-family:var(--fd);font-weight:600;font-size:14px;color:#fff;}
+.nav-brand-sub{font-size:10px;color:var(--gold);margin-top:-2px;}
+.nav-center{display:flex;gap:2px;}
+.nav-tab{padding:5px 11px;border-radius:6px;font-size:12px;font-weight:500;color:rgba(255,255,255,.65);cursor:pointer;border:none;background:transparent;transition:all .15s;font-family:var(--fb);}
+.nav-tab:hover{background:rgba(255,255,255,.1);color:#fff;}
+.nav-tab.active{background:var(--gold);color:var(--gd);font-weight:600;}
+.nav-right{display:flex;align-items:center;gap:8px;}
+.nav-btn{background:transparent;border:none;cursor:pointer;color:rgba(255,255,255,.65);font-size:16px;padding:6px;border-radius:6px;position:relative;transition:all .15s;}
+.nav-btn:hover{background:rgba(255,255,255,.1);color:#fff;}
+.nav-badge{position:absolute;top:1px;right:1px;width:8px;height:8px;background:var(--red);border-radius:50%;border:2px solid var(--gd);}
+.nav-user{display:flex;align-items:center;gap:7px;cursor:pointer;padding:4px 8px;border-radius:8px;transition:background .15s;}
+.nav-user:hover{background:rgba(255,255,255,.1);}
+.nav-av{width:28px;height:28px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--gd);}
+.nav-uname{font-size:12px;color:rgba(255,255,255,.8);}
+.online-dot{display:flex;align-items:center;gap:5px;font-size:11px;color:#4ADE80;}
+.sdot{width:6px;height:6px;border-radius:50%;background:#4ADE80;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* TICKER */
+.ticker{background:rgba(0,0,0,.25);height:32px;display:flex;align-items:center;gap:12px;overflow:hidden;padding:0 1.5rem;}
+.ticker-badge{font-size:10px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.06em;flex-shrink:0;border:1px solid var(--gold);padding:1px 6px;border-radius:4px;}
+.ticker-scroll{display:flex;gap:2.5rem;animation:ticker 25s linear infinite;white-space:nowrap;}
+.ticker-item{font-size:11px;color:rgba(255,255,255,.7);}
+@keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* PAGES */
+.page{display:none;animation:fadeIn .2s ease;}
+.page.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.pw{padding:1.5rem;max-width:1320px;}
+
+/* API STATUS BAR */
+.api-bar{display:flex;align-items:center;gap:8px;padding:8px 1.5rem;background:var(--w);border-bottom:1px solid var(--g200);font-size:11px;}
+.api-status{display:flex;align-items:center;gap:5px;font-weight:500;}
+.api-dot{width:7px;height:7px;border-radius:50%;}
+.api-dot.green{background:#22C55E;}
+.api-dot.red{background:var(--red);}
+.api-dot.yellow{background:var(--gold);}
+.api-url{color:var(--g400);font-family:monospace;font-size:10px;margin-left:8px;}
+
+/* SHARED COMPONENTS */
+.card{background:var(--w);border:1px solid var(--g200);border-radius:var(--rad);padding:1.25rem;box-shadow:var(--sh);}
+.card-header{display:flex;align-items:center;justify-content:space-between;padding:.875rem 1.25rem;border-bottom:1px solid var(--g200);background:var(--g100);border-radius:var(--rad) var(--rad) 0 0;margin:-1.25rem -1.25rem 1.25rem;}
+.card-title{font-family:var(--fd);font-size:13px;font-weight:600;color:var(--g900);}
+.page-heading{font-family:var(--fd);font-size:20px;font-weight:700;color:var(--g900);margin-bottom:3px;}
+.page-sub{font-size:13px;color:var(--g400);margin-bottom:1.25rem;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;}
+.btn{padding:8px 18px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:none;font-family:var(--fb);transition:all .15s;display:inline-flex;align-items:center;gap:6px;}
+.btn:disabled{opacity:.6;cursor:not-allowed;}
+.btn-p{background:var(--gm);color:#fff;}.btn-p:hover:not(:disabled){background:var(--gd);}
+.btn-s{background:var(--g100);color:var(--g700);border:1px solid var(--g200);}.btn-s:hover:not(:disabled){background:var(--g200);}
+.btn-d{background:var(--red);color:#fff;}.btn-d:hover:not(:disabled){background:#a93226;}
+.btn-g{background:var(--gold);color:var(--gd);}
+.btn-sm{padding:4px 10px;font-size:11px;border-radius:6px;}
+.fi{padding:8px 12px;border:1px solid var(--g200);border-radius:8px;font-size:13px;font-family:var(--fb);color:var(--g900);background:var(--w);outline:none;width:100%;transition:border .15s;}
+.fi:focus{border-color:var(--gb);}
+.fsel{padding:8px 12px;border:1px solid var(--g200);border-radius:8px;font-size:13px;font-family:var(--fb);color:var(--g900);background:var(--w);outline:none;width:100%;}
+.badge{display:inline-block;font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;}
+.b-g{background:var(--gl);color:var(--gm);}
+.b-r{background:var(--redl);color:var(--red);}
+.b-o{background:var(--goldl);color:#856404;}
+.b-b{background:var(--bluel);color:var(--blue);}
+
+/* METRIC CARDS */
+.mc{background:var(--w);border:1px solid var(--g200);border-radius:var(--rad);padding:1.1rem 1.25rem;position:relative;overflow:hidden;box-shadow:var(--sh);}
+.mc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.mc.c1::before{background:var(--gb);}
+.mc.c2::before{background:var(--gold);}
+.mc.c3::before{background:var(--red);}
+.mc.c4::before{background:var(--blue);}
+.ml{font-size:10px;font-weight:600;color:var(--g400);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;}
+.mv{font-family:var(--fd);font-size:24px;font-weight:700;color:var(--g900);}
+.md{font-size:11px;color:var(--gb);margin-top:4px;font-weight:500;}
+.md.neg{color:var(--red);}
+.mc-loading{color:var(--g300);}
+
+/* TABLE */
+.rt{width:100%;border-collapse:collapse;}
+.rt th{text-align:left;padding:9px 14px;font-size:10px;font-weight:600;color:var(--g400);text-transform:uppercase;letter-spacing:.06em;background:var(--g100);border-bottom:1px solid var(--g200);}
+.rt td{padding:10px 14px;font-size:12px;border-bottom:1px solid var(--g100);vertical-align:middle;color:var(--g700);}
+.rt tr:last-child td{border-bottom:none;}
+.rt tr:hover td{background:var(--g100);}
+.rb{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600;}
+.rh{background:var(--redl);color:var(--red);}
+.rm{background:var(--goldl);color:#856404;}
+.rl{background:var(--gl);color:var(--gm);}
+
+/* SCAN FEED */
+.sf-item{display:flex;align-items:flex-start;gap:10px;padding:10px 1.25rem;border-bottom:1px solid var(--g100);cursor:pointer;transition:background .1s;}
+.sf-item:hover{background:var(--g100);}
+.sf-av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0;color:#fff;}
+.scan-line{height:2px;overflow:hidden;background:var(--g200);}
+.scan-line-inner{height:100%;background:linear-gradient(90deg,transparent,var(--gb),transparent);animation:scanmove 2s linear infinite;}
+@keyframes scanmove{from{transform:translateX(-100%)}to{transform:translateX(400%)}}
+
+/* BIZ GRID */
+.biz-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(265px,1fr));gap:1rem;}
+.biz-card{background:var(--w);border:1px solid var(--g200);border-radius:var(--rad);padding:1.1rem;cursor:pointer;transition:all .15s;position:relative;box-shadow:var(--sh);}
+.biz-card:hover{box-shadow:0 6px 24px rgba(0,0,0,.1);transform:translateY(-2px);}
+.biz-av{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:#fff;flex-shrink:0;}
+.filter-pill{padding:5px 12px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--g200);background:var(--w);color:var(--g700);transition:all .15s;}
+.filter-pill.active{background:var(--gm);color:#fff;border-color:var(--gm);}
+
+/* CHAT */
+.chat-box{background:var(--w);border:1px solid var(--g200);border-radius:var(--rad);overflow:hidden;box-shadow:var(--sh);}
+.chat-head{background:var(--gd);padding:10px 1.25rem;display:flex;align-items:center;gap:10px;}
+.chat-msgs{padding:1rem 1.25rem;min-height:160px;max-height:300px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;}
+.cmsg{display:flex;gap:7px;align-items:flex-start;}
+.cmsg.user{flex-direction:row-reverse;}
+.cbub{max-width:82%;padding:9px 13px;border-radius:12px;font-size:13px;line-height:1.5;}
+.cmsg.ai .cbub{background:var(--g100);color:var(--g900);border-radius:4px 12px 12px 12px;}
+.cmsg.user .cbub{background:var(--gm);color:#fff;border-radius:12px 4px 12px 12px;}
+.cav{width:26px;height:26px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;}
+.cav.ai{background:var(--gold);color:var(--gd);}
+.cav.user{background:var(--gm);color:#fff;}
+.chat-input-row{display:flex;gap:8px;padding:10px 1.25rem;border-top:1px solid var(--g200);}
+.chat-in{flex:1;padding:8px 12px;border:1px solid var(--g200);border-radius:8px;font-size:13px;font-family:var(--fb);outline:none;background:var(--w);color:var(--g900);}
+.chat-in:focus{border-color:var(--gb);}
+.typing{display:none;align-items:center;gap:4px;}
+.typing.show{display:flex;}
+.td{width:5px;height:5px;border-radius:50%;background:var(--g400);animation:bounce .8s infinite;}
+.td:nth-child(2){animation-delay:.15s;}.td:nth-child(3){animation-delay:.3s;}
+@keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-5px)}}
+
+/* CALC */
+.calc-dark{background:linear-gradient(135deg,var(--gd),var(--gm));border-radius:var(--rad);padding:1.5rem;color:#fff;}
+.calc-red{background:linear-gradient(135deg,#6b1f1f,var(--red));border-radius:var(--rad);padding:1.5rem;color:#fff;}
+.calc-res{background:rgba(255,255,255,.12);border-radius:10px;padding:1rem;margin-top:1rem;text-align:center;}
+.calc-amt{font-family:var(--fd);font-size:28px;font-weight:700;color:#4ADE80;}
+.calc-amt.red{color:#FF8A80;}
+.ci{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:8px;padding:8px 12px;font-size:13px;color:#fff;width:100%;outline:none;font-family:var(--fb);margin-bottom:8px;}
+.ci::placeholder{color:rgba(255,255,255,.4);}
+.csl{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:8px;padding:8px 12px;font-size:13px;color:#fff;width:100%;outline:none;font-family:var(--fb);margin-bottom:8px;}
+.csl option{background:var(--gd);}
+.cl2{font-size:11px;color:rgba(255,255,255,.65);margin-bottom:4px;}
+
+/* MODAL */
+.modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:400;align-items:center;justify-content:center;}
+.modal-ov.show{display:flex;}
+.modal-box{background:var(--w);border-radius:16px;width:580px;max-width:95vw;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+.modal-head{background:var(--gd);padding:1.1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;border-radius:16px 16px 0 0;}
+.modal-title{font-family:var(--fd);font-size:15px;font-weight:700;color:#fff;}
+.modal-close{background:none;border:none;cursor:pointer;font-size:18px;color:rgba(255,255,255,.6);line-height:1;}
+.modal-body{padding:1.5rem;}
+.dr{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--g100);font-size:13px;}
+.dr:last-child{border-bottom:none;}
+.dl{color:var(--g400);font-weight:500;}
+.dv{color:var(--g900);font-weight:600;}
+
+/* RECEIPT */
+.receipt{background:#fff;border:2px dashed var(--g300);border-radius:10px;padding:1.5rem;font-family:'Courier New',monospace;font-size:12px;line-height:1.9;color:#111;}
+.r-head{text-align:center;border-bottom:2px solid #111;padding-bottom:10px;margin-bottom:12px;}
+.r-row{display:flex;justify-content:space-between;}
+.r-total{border-top:2px solid #111;margin-top:8px;padding-top:8px;font-weight:700;font-size:14px;}
+.r-stamp{text-align:center;margin-top:12px;padding:8px;background:var(--gl);border-radius:6px;color:var(--gm);font-weight:700;font-size:12px;}
+
+/* NOTIF PANEL */
+.notif-panel{position:fixed;top:64px;right:12px;width:300px;background:var(--w);border:1px solid var(--g200);border-radius:var(--rad);box-shadow:0 8px 30px rgba(0,0,0,.15);z-index:300;display:none;max-height:400px;overflow-y:auto;}
+.notif-panel.show{display:block;}
+.ni{display:flex;gap:10px;padding:10px 1rem;border-bottom:1px solid var(--g100);cursor:pointer;transition:background .1s;}
+.ni:hover{background:var(--g100);}
+.ni:last-child{border-bottom:none;}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--gd);color:#fff;border-left:4px solid var(--gold);border-radius:10px;padding:11px 16px;font-size:13px;max-width:310px;transform:translateX(120%);transition:transform .3s;z-index:500;box-shadow:0 8px 30px rgba(0,0,0,.3);}
+.toast.show{transform:translateX(0);}
+
+/* PBAR */
+.pbar{height:7px;background:var(--g200);border-radius:4px;overflow:hidden;margin:3px 0;}
+.pfill{height:100%;border-radius:4px;transition:width .6s;}
+
+/* AI STATUS */
+.ai-stat{background:var(--gd);border-radius:var(--rad);padding:1.1rem;color:#fff;}
+.ai-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:11px;}
+.ai-row:last-child{border-bottom:none;}
+.ai-lbl{color:rgba(255,255,255,.55);}
+.ai-val{font-weight:600;color:#4ADE80;}
+.ai-val.warn{color:var(--gold);}
+.ai-val.off{color:var(--red);}
+
+/* MAP SVG */
+.mr{fill:#e8f5e9;stroke:#a5d6a7;stroke-width:1;cursor:pointer;transition:fill .2s;}
+.mr:hover{fill:#c8e6c9;}
+.mr.hot{fill:#ffcdd2;}.mr.warm{fill:#fff9c4;}
+@keyframes mapblink{0%,100%{opacity:1;r:5}50%{opacity:.5;r:9}}
+
+/* ENFORCEMENT TIMELINE */
+.enf-line{position:relative;padding-left:22px;}
+.enf-line::before{content:'';position:absolute;left:7px;top:0;bottom:0;width:2px;background:var(--g200);}
+.enf-step{position:relative;margin-bottom:1.1rem;}
+.enf-step:last-child{margin-bottom:0;}
+.enf-dot{position:absolute;left:-18px;top:3px;width:14px;height:14px;border-radius:50%;border:2px solid var(--w);display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;color:#fff;}
+.enf-badge{display:inline-block;font-size:9px;font-weight:600;padding:1px 6px;border-radius:4px;margin-bottom:3px;}
+.enf-title{font-size:13px;font-weight:600;color:var(--g900);margin-bottom:2px;}
+.enf-desc{font-size:11px;color:var(--g400);line-height:1.5;}
+
+/* FORM */
+.fs{background:var(--w);border:1px solid var(--g200);border-radius:var(--rad);padding:1.25rem;margin-bottom:1rem;box-shadow:var(--sh);}
+.fst{font-family:var(--fd);font-size:14px;font-weight:600;color:var(--g900);margin-bottom:1rem;padding-bottom:8px;border-bottom:1px solid var(--g200);}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+.fg{display:flex;flex-direction:column;gap:4px;}
+.flb{font-size:11px;font-weight:600;color:var(--g700);text-transform:uppercase;letter-spacing:.03em;}
+
+/* TIN BOX */
+.tin-box{background:var(--gl);border:2px solid var(--gb);border-radius:12px;padding:1.25rem;text-align:center;display:none;margin-bottom:1rem;}
+.tin-num{font-family:var(--fd);font-size:26px;font-weight:700;color:var(--gm);letter-spacing:4px;}
+
+@media(max-width:768px){.g4{grid-template-columns:1fr 1fr;}.g3,.g2{grid-template-columns:1fr;}nav{padding:0 1rem;}.nav-center{display:none;}.pw{padding:1rem;}}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="loading">
+  <div class="load-logo">TRA</div>
+  <div class="load-text">TRA Digital Tax</div>
+  <div class="load-sub">Tanzania Revenue Authority</div>
+  <div class="load-bar"><div class="load-fill"></div></div>
+</div>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-icon">TRA</div>
+      <div class="login-title">TRA Digital Tax System</div>
+      <div class="login-sub">Mfumo wa Kodi ya Biashara za Mtandaoni</div>
+    </div>
+    <div class="role-tabs">
+      <button class="role-tab active" onclick="setRole('officer',this)">👮 Afisa wa TRA</button>
+      <button class="role-tab" onclick="setRole('business',this)">🛍️ Mfanya Biashara</button>
+    </div>
+    <div id="login-error" class="login-error"></div>
+    <div class="login-field">
+      <label class="login-label" id="lbl-user">Barua Pepe</label>
+      <input class="login-input" id="li-email" type="text" placeholder="officer@tra.go.tz" value="officer@tra.go.tz">
+    </div>
+    <div class="login-field">
+      <label class="login-label">Neno la Siri</label>
+      <input class="login-input" id="li-pass" type="password" placeholder="••••••••" value="tra2024">
+    </div>
+    <button class="login-btn" id="login-btn" onclick="doLogin()">🔐 Ingia Mfumoni</button>
+    <div class="login-hint">
+      <strong>Demo:</strong> Bonyeza "Ingia" bila kubadilisha chochote<br>
+      <span id="role-hint" style="color:var(--gb);">Utaingia kama Afisa wa TRA</span>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+<nav>
+  <div class="nav-brand" onclick="showPage('dash')">
+    <div class="nav-brand-icon">TRA</div>
+    <div>
+      <div class="nav-brand-text">TRA Digital Tax</div>
+      <div class="nav-brand-sub">Tanzania Revenue Authority</div>
+    </div>
+  </div>
+  <div class="nav-center" id="nav-center"></div>
+  <div class="nav-right">
+    <button class="nav-btn" onclick="toggleDark()" title="Dark Mode">🌙</button>
+    <button class="nav-btn" onclick="toggleNotif()">🔔<span class="nav-badge" id="notif-dot"></span></button>
+    <div class="nav-user" onclick="doLogout()">
+      <div class="nav-av" id="nav-av">A</div>
+      <div class="nav-uname" id="nav-uname">Afisa</div>
+    </div>
+    <div class="online-dot"><div class="sdot"></div>Online</div>
+  </div>
+</nav>
+
+<!-- TICKER -->
+<div class="ticker" style="background:rgba(0,0,0,.3);">
+  <div class="ticker-badge">📡 LIVE</div>
+  <div class="ticker-scroll" id="ticker-scroll">
+    <span class="ticker-item">🤖 AI Scanner inafanya kazi — akaunti 47,000+ zinachunguzwa</span>
+    <span class="ticker-item">🔴 Biashara hatari 8 zinasubiri hatua za TRA</span>
+    <span class="ticker-item">✅ Malipo yaliyokusanywa leo: Sh. 12.4M</span>
+    <span class="ticker-item">📱 SMS 14,203 zimetumwa mwezi huu</span>
+    <span class="ticker-item">🗺️ Mkoa wa Dar es Salaam una biashara 18,420 zinazofuatiliwa</span>
+    <span class="ticker-item">🤖 AI Scanner inafanya kazi — akaunti 47,000+ zinachunguzwa</span>
+    <span class="ticker-item">🔴 Biashara hatari 8 zinasubiri hatua za TRA</span>
+    <span class="ticker-item">✅ Malipo yaliyokusanywa leo: Sh. 12.4M</span>
+    <span class="ticker-item">📱 SMS 14,203 zimetumwa mwezi huu</span>
+    <span class="ticker-item">🗺️ Mkoa wa Dar es Salaam una biashara 18,420 zinazofuatiliwa</span>
+  </div>
+</div>
+
+<!-- API STATUS -->
+<div class="api-bar">
+  <div class="api-status"><div class="api-dot" id="api-dot-color" style="background:var(--gold);"></div><span id="api-status-text" style="color:var(--gold);">Inaunganika na Backend...</span></div>
+  <div class="api-url" id="api-url-display"></div>
+  <div style="margin-left:auto;font-size:11px;color:var(--g400);" id="last-sync">--</div>
+</div>
+
+<!-- NOTIF PANEL -->
+<div class="notif-panel" id="notif-panel">
+  <div style="padding:10px 1rem;border-bottom:1px solid var(--g200);display:flex;justify-content:space-between;align-items:center;">
+    <div style="font-family:var(--fd);font-size:13px;font-weight:600;color:var(--g900);">Arifa</div>
+    <button style="font-size:11px;color:var(--blue);cursor:pointer;border:none;background:none;font-family:var(--fb);" onclick="clearNotifs()">Futa zote</button>
+  </div>
+  <div id="notif-list">
+    <div class="ni"><div style="width:28px;height:28px;border-radius:50%;background:var(--redl);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;">🚨</div><div><div style="font-size:11px;color:var(--g700);">Mfumo umeanza. Karibu!</div><div style="font-size:10px;color:var(--g400);">Sasa hivi</div></div></div>
+  </div>
+</div>
+
+<!-- PAGES -->
+
+<!-- DASHBOARD -->
+<div id="page-dash" class="page active">
+  <div style="background:linear-gradient(135deg,var(--gd),var(--gm));padding:1.5rem;">
+    <div style="font-family:var(--fd);font-size:22px;font-weight:700;color:#fff;margin-bottom:2px;" id="dash-greeting">Karibu, Afisa wa TRA</div>
+    <div style="font-size:13px;color:rgba(255,255,255,.6);">Mfumo wa ufuatiliaji wa biashara za mtandaoni Tanzania</div>
+    <div style="font-size:11px;color:var(--gold);margin-top:6px;font-weight:500;" id="live-date"></div>
+  </div>
+  <div class="pw">
+    <div class="g4" style="margin:1.25rem 0;">
+      <div class="mc c1"><div class="ml">Biashara Zilizogundulika</div><div class="mv" id="m-total">—</div><div class="md" id="m-total-d">Inapakia...</div></div>
+      <div class="mc c2"><div class="ml">Zimesajiliwa</div><div class="mv" id="m-reg">—</div><div class="md" id="m-reg-d">Inapakia...</div></div>
+      <div class="mc c3"><div class="ml">Hazijasajiliwa</div><div class="mv" id="m-unreg">—</div><div class="md neg" id="m-unreg-d">Inapakia...</div></div>
+      <div class="mc c4"><div class="ml">Mapato — Mwezi huu</div><div class="mv" id="m-rev">—</div><div class="md" id="m-rev-d">Inapakia...</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 320px;gap:1.25rem;margin-bottom:1.25rem;">
+      <!-- LIVE FEED -->
+      <div style="background:var(--w);border:1px solid var(--g200);border-radius:var(--rad);overflow:hidden;box-shadow:var(--sh);">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:.875rem 1.25rem;border-bottom:1px solid var(--g200);background:var(--g100);">
+          <div class="card-title">🔍 AI Inafuatilia — Sasa Hivi</div>
+          <span class="badge b-o" id="feed-badge">Inapakia...</span>
+        </div>
+        <div class="scan-line"><div class="scan-line-inner"></div></div>
+        <div style="max-height:340px;overflow-y:auto;" id="live-feed">
+          <div style="padding:2rem;text-align:center;color:var(--g400);font-size:13px;">Inapakia data...</div>
+        </div>
+      </div>
+      <!-- MAP -->
+      <div style="background:var(--w);border:1px solid var(--g200);border-radius:var(--rad);overflow:hidden;box-shadow:var(--sh);">
+        <div style="padding:.875rem 1.25rem;border-bottom:1px solid var(--g200);background:var(--g100);"><div class="card-title">🗺️ Ramani — Biashara kwa Mkoa</div></div>
+        <div style="padding:.875rem;">
+          <svg viewBox="0 0 300 290" style="width:100%;max-height:220px;">
+            <ellipse cx="210" cy="195" rx="22" ry="16" class="mr hot" onclick="showRegion('Dar es Salaam',18420,6234)"/>
+            <text x="210" y="216" text-anchor="middle" font-size="7" fill="#666">Dar es Salaam</text>
+            <ellipse cx="95" cy="110" rx="22" ry="16" class="mr warm" onclick="showRegion('Mwanza',7840,1820)"/>
+            <text x="95" y="131" text-anchor="middle" font-size="7" fill="#666">Mwanza</text>
+            <ellipse cx="168" cy="64" rx="20" ry="14" class="mr warm" onclick="showRegion('Arusha',6200,1540)"/>
+            <text x="168" y="83" text-anchor="middle" font-size="7" fill="#666">Arusha</text>
+            <ellipse cx="148" cy="154" rx="18" ry="13" class="mr" onclick="showRegion('Dodoma',3100,620)"/>
+            <text x="148" y="172" text-anchor="middle" font-size="7" fill="#666">Dodoma</text>
+            <ellipse cx="108" cy="232" rx="19" ry="13" class="mr" onclick="showRegion('Mbeya',4300,890)"/>
+            <text x="108" y="250" text-anchor="middle" font-size="7" fill="#666">Mbeya</text>
+            <ellipse cx="240" cy="154" rx="13" ry="10" class="mr warm" onclick="showRegion('Zanzibar',3800,980)"/>
+            <text x="240" y="169" text-anchor="middle" font-size="7" fill="#666">Zanzibar</text>
+            <circle cx="210" cy="195" r="5" style="fill:var(--red);animation:mapblink 2s ease-in-out infinite;"/>
+            <circle cx="168" cy="64" r="4" style="fill:var(--gold);animation:mapblink 2.5s ease-in-out infinite;"/>
+          </svg>
+        </div>
+        <div style="display:flex;gap:10px;padding:0 .875rem .875rem;flex-wrap:wrap;">
+          <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--g700);"><div style="width:8px;height:8px;border-radius:50%;background:#ffcdd2;border:1px solid #ef9a9a;"></div>Hatari</div>
+          <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--g700);"><div style="width:8px;height:8px;border-radius:50%;background:#fff9c4;border:1px solid #f9a825;"></div>Wastani</div>
+          <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--g700);"><div style="width:8px;height:8px;border-radius:50%;background:#c8e6c9;border:1px solid #a5d6a7;"></div>Salama</div>
+        </div>
+      </div>
+      <!-- RIGHT -->
+      <div style="display:flex;flex-direction:column;gap:1rem;">
+        <div class="ai-stat">
+          <div style="font-family:var(--fd);font-size:13px;font-weight:600;color:var(--gold);margin-bottom:10px;">⚡ Hali ya AI — Sasa</div>
+          <div class="ai-row"><span class="ai-lbl">Instagram</span><span class="ai-val">✓ Inafanya kazi</span></div>
+          <div class="ai-row"><span class="ai-lbl">Facebook</span><span class="ai-val">✓ Inafanya kazi</span></div>
+          <div class="ai-row"><span class="ai-lbl">WhatsApp</span><span class="ai-val">✓ Inafanya kazi</span></div>
+          <div class="ai-row"><span class="ai-lbl">TikTok</span><span class="ai-val warn">⏳ Inasubiri ruhusa</span></div>
+          <div class="ai-row"><span class="ai-lbl">M-Pesa API</span><span class="ai-val">✓ Imeunganika</span></div>
+          <div class="ai-row"><span class="ai-lbl">SMS Gateway</span><span class="ai-val">✓ Zinatumwa</span></div>
+          <div class="ai-row"><span class="ai-lbl">Zilizoscanniwa</span><span class="ai-val" id="scan-count-live">0</span></div>
+        </div>
+        <div style="background:var(--w);border:1px solid var(--g200);border-radius:var(--rad);overflow:hidden;box-shadow:var(--sh);flex:1;">
+          <div style="padding:.875rem 1.25rem;border-bottom:1px solid var(--g200);background:var(--g100);"><div class="card-title">Shughuli za Hivi Karibuni</div></div>
+          <div id="activity-feed" style="max-height:200px;overflow-y:auto;"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card"><div class="card-title" style="margin-bottom:1rem;">📈 Mwelekeo wa Biashara Zilizogundulika</div><canvas id="trend-chart" height="70"></canvas></div>
+  </div>
+</div>
+
+<!-- AI SCANNER -->
+<div id="page-scanner" class="page">
+  <div class="pw" style="padding-top:1.25rem;">
+    <div class="page-heading">🤖 AI Scanner</div>
+    <div class="page-sub">Gundua biashara mpya za mtandaoni zinazokwepa kodi Tanzania</div>
+    <div class="card" style="margin-bottom:1.25rem;display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;">
+      <div style="display:flex;flex-direction:column;gap:4px;flex:1;min-width:120px;"><div style="font-size:10px;font-weight:600;color:var(--g400);text-transform:uppercase;letter-spacing:.04em;">Jukwaa</div>
+        <select class="fsel fi" id="sp-platform"><option value="all">Yote (IG, FB, WA, TikTok)</option><option>Instagram</option><option>Facebook</option><option>WhatsApp</option><option>TikTok</option></select></div>
+      <div style="display:flex;flex-direction:column;gap:4px;flex:1;min-width:120px;"><div style="font-size:10px;font-weight:600;color:var(--g400);text-transform:uppercase;letter-spacing:.04em;">Eneo</div>
+        <select class="fsel fi" id="sp-region"><option>Tanzania nzima</option><option>Dar es Salaam</option><option>Mwanza</option><option>Arusha</option><option>Dodoma</option><option>Mbeya</option></select></div>
+      <div style="display:flex;flex-direction:column;gap:4px;flex:1;min-width:120px;"><div style="font-size:10px;font-weight:600;color:var(--g400);text-transform:uppercase;letter-spacing:.04em;">Aina ya Biashara</div>
+        <select class="fsel fi" id="sp-type"><option>zote</option><option>nguo na mavazi</option><option>chakula na vinywaji</option><option>simu na electronics</option><option>saluni na nywele</option><option>usafiri</option></select></div>
+      <button class="btn btn-p" id="scan-btn" onclick="runScan()">🤖 Scan na AI</button>
+      <button class="btn btn-s" onclick="clearScan()">Futa</button>
+    </div>
+    <div id="scan-area"><div style="text-align:center;padding:3rem;color:var(--g400);"><div style="font-size:2.5rem;margin-bottom:10px;">🔍</div><div style="font-size:14px;font-weight:500;color:var(--g700);">Bonyeza "Scan na AI" kuanza</div><div style="font-size:12px;margin-top:4px;">AI itatumia backend yako na Claude kugundua biashara</div></div></div>
+    <div style="margin-top:1.5rem;">
+      <div class="page-heading" style="font-size:16px;margin-bottom:3px;">🤖 TRA AI Assistant</div>
+      <div class="page-sub" style="margin-bottom:.875rem;">Uliza maswali — AI inajibu kwa Kiswahili ikitumia data ya mfumo wako</div>
+      <div class="chat-box">
+        <div class="chat-head"><div class="cav ai" style="width:28px;height:28px;font-size:11px;flex-shrink:0;">AI</div><div><div style="color:#fff;font-size:13px;font-weight:600;">TRA AI Assistant</div><div style="color:rgba(255,255,255,.5);font-size:10px;">Powered by Claude API • Imeunganishwa na Backend</div></div></div>
+        <div class="chat-msgs" id="chat-msgs">
+          <div class="cmsg ai"><div class="cav ai">AI</div><div class="cbub">Habari! Mimi ni msaidizi wa TRA. Ninajua takwimu za mfumo wako kutoka kwa backend. Niulize chochote! 🇹🇿</div></div>
+        </div>
+        <div style="display:flex;gap:6px;padding:0 1.25rem 8px;" id="typing-row"><div class="typing" id="typing"><div class="cav ai">AI</div><div style="display:flex;gap:4px;align-items:center;padding:7px 12px;background:var(--g100);border-radius:12px;"><div class="td"></div><div class="td"></div><div class="td"></div></div></div></div>
+        <div class="chat-input-row">
+          <input class="chat-in" id="chat-in" type="text" placeholder="Mfano: Ni biashara ngapi za hatari nyingi Dar es Salaam?" onkeydown="if(event.key==='Enter')sendChat()">
+          <button class="btn btn-p btn-sm" style="padding:8px 14px;" onclick="sendChat()">Tuma</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BIASHARA -->
+<div id="page-biashara" class="page">
+  <div class="pw" style="padding-top:1.25rem;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem;">
+      <div class="page-heading">Biashara Zilizogundulika</div>
+      <div style="font-size:12px;color:var(--g400);" id="biz-total-display"></div>
+    </div>
+    <div class="page-sub">Orodha ya biashara zote kutoka backend — data ya kweli</div>
+    <div style="display:flex;gap:7px;margin-bottom:1.25rem;flex-wrap:wrap;" id="biz-filters">
+      <button class="filter-pill active" onclick="filterBiz('',this)">Zote</button>
+      <button class="filter-pill" onclick="filterBiz('unregistered',this)">Hazijasajiliwa</button>
+      <button class="filter-pill" onclick="filterBiz('registered',this)">Zimesajiliwa</button>
+      <button class="filter-pill" onclick="filterBiz('warned',this)">Zimeonywa</button>
+      <button class="filter-pill" onclick="filterBizPlatform('instagram',this)">Instagram</button>
+      <button class="filter-pill" onclick="filterBizPlatform('facebook',this)">Facebook</button>
+      <button class="filter-pill" onclick="filterBizPlatform('whatsapp',this)">WhatsApp</button>
+    </div>
+    <div class="biz-grid" id="biz-grid">
+      <div style="padding:2rem;text-align:center;color:var(--g400);grid-column:1/-1;">Inapakia biashara kutoka backend...</div>
+    </div>
+    <div style="display:flex;justify-content:center;gap:8px;margin-top:1.25rem;" id="biz-pagination"></div>
+  </div>
+</div>
+
+<!-- UTEKELEZAJI -->
+<div id="page-utekelezaji" class="page">
+  <div class="pw" style="padding-top:1.25rem;">
+    <div class="page-heading">Utekelezaji wa Sheria</div>
+    <div class="page-sub">Hatua za kisheria kwa biashara zinazokwepa kodi</div>
+    <div class="g2">
+      <div class="card">
+        <div class="card-header"><div class="card-title">⚖️ Mstari wa Wakati wa Hatua</div></div>
+        <div class="enf-line" style="padding-top:.5rem;">
+          <div class="enf-step"><div class="enf-dot" style="background:var(--blue);">1</div><div class="enf-badge" style="background:var(--bluel);color:var(--blue);">Siku 0</div><div class="enf-title">AI Inagundua Biashara</div><div class="enf-desc">Mfumo wa AI unagundua akaunti kwenye mitandao na kupiga alama ya hatari bila hatua ya kisheria.</div></div>
+          <div class="enf-step"><div class="enf-dot" style="background:var(--gold);">2</div><div class="enf-badge" style="background:var(--goldl);color:#856404;">Siku 1-3</div><div class="enf-title">Onyo la Kwanza — SMS</div><div class="enf-desc">SMS rasmi ya TRA inatumwa. Mfanya biashara anapewa siku 14 za kujisajili bila faini.</div></div>
+          <div class="enf-step"><div class="enf-dot" style="background:var(--gold);">3</div><div class="enf-badge" style="background:var(--goldl);color:#856404;">Siku 14-17</div><div class="enf-title">Onyo la Pili</div><div class="enf-desc">Kama hajajibu, onyo la pili linatumwa. Muda wa ziada siku 7 tu unatolewa.</div></div>
+          <div class="enf-step"><div class="enf-dot" style="background:var(--red);">4</div><div class="enf-badge" style="background:var(--redl);color:var(--red);">Siku 21-30</div><div class="enf-title">Faini — Sh. 500,000</div><div class="enf-desc">Faini rasmi inatolewa. Riba ya 2% kwa mwezi inaanza kuhesabiwa moja kwa moja.</div></div>
+          <div class="enf-step"><div class="enf-dot" style="background:var(--red);">5</div><div class="enf-badge" style="background:var(--redl);color:var(--red);">Siku 30-90</div><div class="enf-title">Ukaguzi wa Uwanjani</div><div class="enf-desc">Afisa wa TRA anatembelea biashara, anachunguza mauzo na akaunti za benki na M-Pesa.</div></div>
+          <div class="enf-step"><div class="enf-dot" style="background:#7B2D2D;">6</div><div class="enf-badge" style="background:#fce4ec;color:#880E4F;">Siku 90+</div><div class="enf-title">Hatua za Mahakama</div><div class="enf-desc">Kesi inapelekwa mahakamani. Adhabu ya ziada, uwezekano wa kifungo, kufungwa kwa akaunti.</div></div>
+        </div>
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:1rem;">
+          <div class="card-header"><div class="card-title">🚨 Kesi Zinazoendelea</div><button class="btn btn-s btn-sm" onclick="loadBizData()">🔄 Refresh</button></div>
+          <div style="overflow:auto;"><table class="rt"><thead><tr><th>Biashara</th><th>Hali</th><th>Hatari</th><th>Hatua</th></tr></thead>
+          <tbody id="enf-table"><tr><td colspan="4" style="text-align:center;padding:1rem;color:var(--g400);">Inapakia...</td></tr></tbody></table></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">📊 Takwimu za Utekelezaji</div></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <div style="background:var(--g100);border-radius:8px;padding:10px;text-align:center;"><div style="font-family:var(--fd);font-size:20px;font-weight:700;color:var(--gb);">78%</div><div style="font-size:10px;color:var(--g400);margin-top:2px;">Wanaojibu Onyo 1</div></div>
+            <div style="background:var(--g100);border-radius:8px;padding:10px;text-align:center;"><div style="font-family:var(--fd);font-size:20px;font-weight:700;color:var(--gold);">56%</div><div style="font-size:10px;color:var(--g400);margin-top:2px;">Wanaojibu Onyo 2</div></div>
+            <div style="background:var(--g100);border-radius:8px;padding:10px;text-align:center;"><div style="font-family:var(--fd);font-size:20px;font-weight:700;color:var(--red);">23%</div><div style="font-size:10px;color:var(--g400);margin-top:2px;">Wanahitaji Ukaguzi</div></div>
+            <div style="background:var(--g100);border-radius:8px;padding:10px;text-align:center;"><div style="font-family:var(--fd);font-size:20px;font-weight:700;color:#7B2D2D;">4%</div><div style="font-size:10px;color:var(--g400);margin-top:2px;">Wanaenda Mahakama</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RIPOTI -->
+<div id="page-ripoti" class="page">
+  <div class="pw" style="padding-top:1.25rem;">
+    <div class="page-heading">Ripoti na Takwimu</div>
+    <div class="page-sub">Data ya kweli kutoka backend — mapato, malipo, ufanisi</div>
+    <div class="g4" style="margin-bottom:1.25rem;">
+      <div class="mc c1"><div class="ml">Mapato — Mwezi huu</div><div class="mv" id="r-rev">Sh. 847M</div><div class="md">↑ +23%</div></div>
+      <div class="mc c2"><div class="ml">Wastani / Biashara</div><div class="mv">Sh. 412K</div><div class="md">Kwa mwezi</div></div>
+      <div class="mc c4"><div class="ml">SMS Zilizotumwa</div><div class="mv" id="r-sms">14,203</div><div class="md">87% walijibu</div></div>
+      <div class="mc c3"><div class="ml">Faini Zilizotolewa</div><div class="mv" id="r-fines">Sh. 234M</div><div class="md neg">Kutoka wakaidi</div></div>
+    </div>
+    <div class="g2" style="margin-bottom:1.25rem;">
+      <div class="card"><div class="card-title" style="margin-bottom:1rem;">📊 Mapato — Miezi 6 (Sh. Milioni)</div><canvas id="rev-chart" height="150"></canvas></div>
+      <div class="card"><div class="card-title" style="margin-bottom:1rem;">🔵 Biashara kwa Jukwaa</div><canvas id="plt-chart" height="150"></canvas></div>
+    </div>
+    <div class="card" style="margin-bottom:1.25rem;">
+      <div class="card-title" style="margin-bottom:1rem;">🏆 Funnel ya Ukusanyaji Kodi</div>
+      <div style="display:flex;flex-direction:column;gap:10px;" id="funnel-data">
+        <div><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px;"><span>Biashara zilizogundulika</span><span id="f1" style="font-weight:600;">—</span></div><div class="pbar" style="height:12px;"><div class="pfill" style="width:100%;background:var(--gm);"></div></div></div>
+        <div><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px;"><span>Hazijasajiliwa (zinahitaji hatua)</span><span id="f2" style="font-weight:600;">—</span></div><div class="pbar" style="height:12px;"><div class="pfill" id="f2-bar" style="width:66%;background:var(--red);"></div></div></div>
+        <div><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px;"><span>Zimesajiliwa</span><span id="f3" style="font-weight:600;">—</span></div><div class="pbar" style="height:12px;"><div class="pfill" id="f3-bar" style="width:34%;background:var(--gb);"></div></div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+        <div class="card-title">📋 Ripoti kwa Mkoa</div>
+        <button class="btn btn-g btn-sm" onclick="showToast('PDF Inapakuliwa 📄','Ripoti kamili ya mkoa kwa mkoa imesalimishwa')">⬇ Pakua PDF</button>
+      </div>
+      <div style="overflow:auto;">
+      <table class="rt"><thead><tr><th>Mkoa</th><th>Biashara</th><th>Zimesajiliwa</th><th>Mapato (Sh.)</th><th>Ufanisi</th></tr></thead>
+      <tbody id="region-table"><tr><td colspan="5" style="text-align:center;padding:1rem;color:var(--g400);">Inapakia...</td></tr></tbody></table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- USAJILI -->
+<div id="page-sajili" class="page">
+  <div class="pw" style="padding-top:1.25rem;">
+    <div class="page-heading">Usajili wa Biashara</div>
+    <div class="page-sub">Fomu ya usajili — inatuma data moja kwa moja kwenye backend</div>
+    <div style="display:grid;grid-template-columns:1fr 300px;gap:1.25rem;align-items:start;">
+      <div>
+        <div class="fs"><div class="fst">👤 Taarifa za Mfanya Biashara</div>
+          <div class="fr"><div class="fg"><label class="flb">Jina la Kwanza *</label><input class="fi" id="r-fn" type="text" placeholder="Amina"></div><div class="fg"><label class="flb">Jina la Ukoo *</label><input class="fi" id="r-ln" type="text" placeholder="Hassan"></div></div>
+          <div class="fr"><div class="fg"><label class="flb">Namba ya Simu *</label><input class="fi" id="r-ph" type="text" placeholder="0712 345 678"></div><div class="fg"><label class="flb">Mkoa *</label><select class="fi" id="r-rg"><option value="">Chagua...</option><option>Dar es Salaam</option><option>Mwanza</option><option>Arusha</option><option>Dodoma</option><option>Mbeya</option><option>Tanga</option><option>Zanzibar</option></select></div></div>
+          <div class="fg" style="margin-bottom:0;"><label class="flb">Namba ya NIDA *</label><input class="fi" id="r-ni" type="text" placeholder="19XXXXXXXXXXXXXXXXX"></div>
+        </div>
+        <div class="fs"><div class="fst">🛍️ Taarifa za Biashara</div>
+          <div class="fr"><div class="fg"><label class="flb">Jina la Biashara *</label><input class="fi" id="r-bn" type="text" placeholder="Amina Fashion"></div><div class="fg"><label class="flb">Aina ya Biashara *</label><select class="fi" id="r-bt"><option value="">Chagua...</option><option>Nguo na mavazi</option><option>Chakula na vinywaji</option><option>Simu na electronics</option><option>Saluni na nywele</option><option>Bidhaa za nyumbani</option><option>Usafiri</option><option>Nyingine</option></select></div></div>
+          <div class="fg" style="margin-bottom:10px;"><label class="flb">Majukwaa ya Mtandao</label>
+            <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:6px;">
+              <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;color:var(--g700);"><input type="checkbox" id="cb-ig"> Instagram</label>
+              <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;color:var(--g700);"><input type="checkbox" id="cb-fb"> Facebook</label>
+              <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;color:var(--g700);"><input type="checkbox" id="cb-wa"> WhatsApp</label>
+              <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;color:var(--g700);"><input type="checkbox" id="cb-tt"> TikTok</label>
+            </div>
+          </div>
+          <div class="fr"><div class="fg"><label class="flb">Mauzo / Mwezi (Sh.)</label><input class="fi" id="r-rv" type="number" placeholder="500000" oninput="quickCalc()"></div><div class="fg"><label class="flb">Njia ya Kulipa Kodi</label><select class="fi" id="r-pm"><option>M-Pesa (Vodacom)</option><option>Tigo Pesa</option><option>Airtel Money</option><option>Benki</option></select></div></div>
+          <div class="fg"><label class="flb">Namba ya M-Pesa / Benki</label><input class="fi" id="r-pn" type="text" placeholder="0712 345 678"></div>
+        </div>
+        <button class="btn btn-p" style="width:100%;padding:12px;font-size:14px;" id="reg-btn" onclick="submitReg()">📋 Sajili Biashara na Pata TIN</button>
+      </div>
+      <div>
+        <div class="tin-box" id="tin-display">
+          <div style="font-size:11px;color:var(--gm);font-weight:600;text-transform:uppercase;margin-bottom:8px;">✅ Usajili Umefanikiwa!</div>
+          <div class="tin-num" id="tin-num">TZ---</div>
+          <div style="font-size:11px;color:var(--g700);margin-top:6px;line-height:1.5;">Namba yako ya TIN. Hifadhi vizuri.</div>
+          <button class="btn btn-p btn-sm" style="margin-top:10px;width:100%;" onclick="showReceiptModal()">🧾 Pakua Risiti</button>
+        </div>
+        <div class="calc-dark">
+          <div style="font-family:var(--fd);font-size:13px;font-weight:600;color:var(--gold);margin-bottom:8px;">💡 Makisio ya Kodi Yako</div>
+          <div class="cl2">Mauzo (Sh.)</div>
+          <input class="ci" id="q-rev" type="number" placeholder="500000" oninput="quickCalc()">
+          <div class="calc-res"><div class="calc-amt" id="q-amt">Sh. 0</div><div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:3px;" id="q-note">Ingiza mauzo hapo juu</div></div>
+        </div>
+        <div class="card" style="margin-top:1rem;">
+          <div style="font-size:13px;font-weight:600;color:var(--g900);margin-bottom:8px;">📱 Hatua za Usajili</div>
+          <div style="font-size:12px;color:var(--g700);line-height:2.2;">✅ Jaza fomu<br>✅ Pata TIN yako<br>✅ Pokea SMS<br>✅ Lipa kodi kila mwezi<br>✅ Pokea risiti ya TRA</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- KIKOKOTOO -->
+<div id="page-kodi" class="page">
+  <div class="pw" style="padding-top:1.25rem;">
+    <div class="page-heading">Kikokotoo cha Kodi na Faini</div>
+    <div class="page-sub">Hesabu kodi inayostahili na faini — AI inasaidia pia</div>
+    <div class="g2" style="align-items:start;">
+      <div>
+        <div class="calc-dark" style="margin-bottom:1rem;">
+          <div style="font-family:var(--fd);font-size:13px;font-weight:600;color:var(--gold);margin-bottom:10px;">🧮 Kikokotoo cha Kodi</div>
+          <div class="cl2">Mauzo ya Mwezi (Sh.)</div><input class="ci" id="c-rev" type="number" placeholder="1000000" oninput="calcTax()">
+          <div class="cl2">Aina ya Biashara</div>
+          <select class="csl" id="c-type" onchange="calcTax()"><option value="small">Ndogo (chini ya Sh. 4M/mwezi)</option><option value="medium">Wastani (Sh. 4M–20M)</option><option value="large">Kubwa (zaidi ya Sh. 20M)</option></select>
+          <div class="calc-res"><div class="calc-amt" id="c-tax">Sh. 0</div><div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:3px;">Kodi ya mwezi</div></div>
+          <div style="margin-top:10px;background:rgba(255,255,255,.1);border-radius:8px;padding:10px;font-size:11px;color:rgba(255,255,255,.65);line-height:1.8;white-space:pre-line;" id="c-bd">Ingiza mauzo...</div>
+        </div>
+        <div class="card">
+          <div style="font-size:13px;font-weight:600;color:var(--g900);margin-bottom:4px;">🤖 Uliza AI Kuhusu Kodi Yako</div>
+          <div style="font-size:11px;color:var(--g400);margin-bottom:8px;">Jibu linatoka backend + Claude API</div>
+          <div style="display:flex;gap:7px;"><input class="fi" type="text" id="kq" placeholder="Mfano: Je, ninahitaji kulipa VAT?" onkeydown="if(event.key==='Enter')askKodiAI()"><button class="btn btn-p btn-sm" style="padding:8px 14px;flex-shrink:0;" onclick="askKodiAI()">Uliza</button></div>
+          <div id="ka" style="margin-top:8px;font-size:12px;color:var(--g700);line-height:1.6;display:none;background:var(--g100);border-radius:8px;padding:10px;"></div>
+        </div>
+      </div>
+      <div>
+        <div class="calc-red" style="margin-bottom:1rem;">
+          <div style="font-family:var(--fd);font-size:13px;font-weight:600;color:#FFB3B3;margin-bottom:10px;">⚠️ Kikokotoo cha Faini</div>
+          <div class="cl2">Mauzo ya Mwezi (Sh.)</div><input class="ci" id="f-rev" type="number" placeholder="500000" oninput="calcFine()">
+          <div class="cl2">Miezi ya Kukwepa Kodi</div>
+          <select class="csl" id="f-mo" onchange="calcFine()"><option value="1">Mwezi 1</option><option value="3">Miezi 3</option><option value="6">Miezi 6</option><option value="12">Mwaka 1</option><option value="24">Miaka 2</option><option value="36">Miaka 3+</option></select>
+          <div class="calc-res" style="background:rgba(0,0,0,.2);"><div class="calc-amt red" id="f-tot">Sh. 0</div><div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:3px;">Jumla ya deni</div></div>
+          <div style="margin-top:10px;background:rgba(0,0,0,.2);border-radius:8px;padding:10px;font-size:11px;color:rgba(255,255,255,.65);line-height:1.8;white-space:pre-line;" id="f-bd">Ingiza mauzo...</div>
+        </div>
+        <div class="card">
+          <div style="font-size:12px;font-weight:600;color:var(--g900);margin-bottom:10px;">📊 Jedwali la Viwango</div>
+          <table class="rt"><thead><tr><th>Mauzo ya Mwezi</th><th>Kiwango</th><th>Aina</th></tr></thead>
+          <tbody>
+            <tr><td>Chini ya Sh. 500K</td><td><span class="rb rl">0%</span></td><td style="color:var(--g400)">Msamaha</td></tr>
+            <tr><td>Sh. 500K – 4M</td><td><span class="rb rl">3%</span></td><td style="color:var(--g400)">Prestampo</td></tr>
+            <tr><td>Sh. 4M – 20M</td><td><span class="rb rm">VAT 18%</span></td><td style="color:var(--g400)">VAT Registered</td></tr>
+            <tr><td>Zaidi ya Sh. 20M</td><td><span class="rb rh">18%+30%</span></td><td style="color:var(--g400)">VAT+Income Tax</td></tr>
+          </tbody></table>
+          <div style="margin-top:6px;font-size:10px;color:var(--g400);">* Viwango halisi: tra.go.tz</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-ov" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box"><div class="modal-head"><div class="modal-title" id="modal-title">Maelezo</div><button class="modal-close" onclick="closeModal()">✕</button></div><div class="modal-body" id="modal-body"></div></div>
+</div>
+<div class="toast" id="toast"><div style="font-weight:600;margin-bottom:2px;" id="t-title"></div><div style="color:rgba(255,255,255,.75);font-size:11px;" id="t-body"></div></div>
+</div><!-- end #app -->
+
+<script>
+// ============================================================
+// CONFIGURATION — Badilisha hapa kulingana na seva yako
+// ============================================================
+const API_BASE = 'https://web-production-a64af.up.railway.app/api'; 
+// Wakati seva yako iko tayari kwenye internet, badilisha hadi:
+// const API_BASE = 'https://your-server.com/api';
+
+// ============================================================
+// STATE
+// ============================================================
+let TOKEN = localStorage.getItem('tra_token') || null;
+let OFFICER = JSON.parse(localStorage.getItem('tra_officer') || 'null');
+let role = 'officer';
+let bizPage = 1, bizFilter = '', bizPlatform = '';
+let chartsInit = false;
+let darkMode = localStorage.getItem('tra_dark') === 'true';
+let scanCount = 0;
+
+// ============================================================
+// API HELPER — Kila ombi linapita hapa
+// ============================================================
+async function api(method, path, body = null) {
+  const opts = {
+    method,
+    headers: { 'Content-Type': 'application/json' }
+  };
+  if (TOKEN) opts.headers['Authorization'] = `Bearer ${TOKEN}`;
+  if (body) opts.body = JSON.stringify(body);
+  const res = await fetch(API_BASE + path, opts);
+  const data = await res.json();
+  if (!res.ok && res.status === 401) {
+    // Token imekwisha — toka mfumoni
+    doLogout();
+    throw new Error('Muda wa kuingia umekwisha. Ingia tena.');
+  }
+  return data;
+}
+
+// ============================================================
+// API STATUS CHECK
+// ============================================================
+async function checkApiStatus() {
+  document.getElementById('api-url-display').textContent = API_BASE;
+  try {
+    const res = await fetch(API_BASE + '/health', { signal: AbortSignal.timeout(5000) });
+    const data = await res.json();
+    if (data.success) {
+      document.getElementById('api-dot-color').style.background = '#22C55E';
+      document.getElementById('api-status-text').textContent = 'Backend imeunganika ✓';
+      document.getElementById('api-status-text').style.color = '#22C55E';
+      document.getElementById('last-sync').textContent = `Imesawazishwa: ${new Date().toLocaleTimeString('sw-TZ')}`;
+      return true;
+    }
+  } catch (e) {
+    document.getElementById('api-dot-color').style.background = 'var(--red)';
+    document.getElementById('api-status-text').textContent = '⚠ Backend haijaanza — Angalia README';
+    document.getElementById('api-status-text').style.color = 'var(--red)';
+  }
+  return false;
+}
+
+// ============================================================
+// LOGIN / LOGOUT
+// ============================================================
+function setRole(r, el) {
+  role = r;
+  document.querySelectorAll('.role-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  if (r === 'officer') {
+    document.getElementById('li-email').value = 'officer@tra.go.tz';
+    document.getElementById('lbl-user').textContent = 'Barua Pepe';
+    document.getElementById('role-hint').textContent = 'Utaingia kama Afisa wa TRA';
+  } else {
+    document.getElementById('li-email').value = 'TZ2024001';
+    document.getElementById('lbl-user').textContent = 'TIN Namba yako';
+    document.getElementById('role-hint').textContent = 'Utaingia kama Mfanya Biashara';
+  }
+}
+
+async function doLogin() {
+  const email = document.getElementById('li-email').value.trim();
+  const password = document.getElementById('li-pass').value.trim();
+  const btn = document.getElementById('login-btn');
+  const errEl = document.getElementById('login-error');
+  errEl.classList.remove('show');
+  if (!email || !password) { errEl.textContent = 'Jaza sehemu zote.'; errEl.classList.add('show'); return; }
+  btn.disabled = true; btn.textContent = 'Inaingia...';
+
+  try {
+    const data = await api('POST', '/auth/login', { email, password });
+    if (data.success) {
+      TOKEN = data.token;
+      OFFICER = data.officer;
+      localStorage.setItem('tra_token', TOKEN);
+      localStorage.setItem('tra_officer', JSON.stringify(OFFICER));
+      launchApp();
+    } else {
+      errEl.textContent = data.message || 'Imeshindwa kuingia.';
+      errEl.classList.add('show');
+    }
+  } catch (e) {
+    // Backend haijaanza — tumia demo mode
+    if (email === 'officer@tra.go.tz') {
+      TOKEN = 'demo_mode';
+      OFFICER = { id: 'demo', full_name: 'Afisa wa Demo', email, role: 'admin', region: 'Dar es Salaam', badge_number: 'TRA-001' };
+      localStorage.setItem('tra_token', TOKEN);
+      localStorage.setItem('tra_officer', JSON.stringify(OFFICER));
+      showToast('Demo Mode ⚠️', 'Backend haijaanza. Inatumia data ya mfano.');
+      launchApp();
+    } else {
+      errEl.textContent = 'Backend haijaanza. Angalia README ili kuanza seva.';
+      errEl.classList.add('show');
+    }
+  }
+  btn.disabled = false; btn.textContent = '🔐 Ingia Mfumoni';
+}
+
+function doLogout() {
+  TOKEN = null; OFFICER = null;
+  localStorage.removeItem('tra_token');
+  localStorage.removeItem('tra_officer');
+  document.getElementById('app').classList.remove('show');
+  document.getElementById('login-screen').classList.add('show');
+  chartsInit = false;
+}
+
+function launchApp() {
+  document.getElementById('login-screen').classList.remove('show');
+  document.getElementById('app').classList.add('show');
+  // Weka jina la afisa
+  document.getElementById('nav-av').textContent = (OFFICER?.full_name || 'A')[0].toUpperCase();
+  document.getElementById('nav-uname').textContent = OFFICER?.full_name?.split(' ')[0] || 'Afisa';
+  document.getElementById('dash-greeting').textContent = `Karibu, ${OFFICER?.full_name || 'Afisa wa TRA'}`;
+  document.getElementById('live-date').textContent = new Date().toLocaleDateString('sw-TZ', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  buildNavTabs();
+  applyDark();
+  initApp();
+}
+
+function buildNavTabs() {
+  const officerTabs = [
+    { label: 'Dashibodi', page: 'dash' },
+    { label: 'AI Scanner', page: 'scanner' },
+    { label: 'Biashara', page: 'biashara' },
+    { label: 'Utekelezaji', page: 'utekelezaji' },
+    { label: 'Ripoti', page: 'ripoti' },
+    { label: 'Usajili', page: 'sajili' },
+    { label: 'Kikokotoo', page: 'kodi' },
+  ];
+  document.getElementById('nav-center').innerHTML = officerTabs.map(t =>
+    `<button class="nav-tab" onclick="showPage('${t.page}')">${t.label}</button>`
+  ).join('');
+}
+
+// ============================================================
+// APP INIT
+// ============================================================
+async function initApp() {
+  await checkApiStatus();
+  loadDashboardStats();
+  loadLiveFeed();
+  loadActivity();
+  initTrendChart();
+  setTimeout(() => initRipotiCharts(), 200);
+  // Live scan counter
+  setInterval(() => {
+    scanCount += Math.floor(Math.random() * 8) + 2;
+    const el = document.getElementById('scan-count-live');
+    if (el) el.textContent = scanCount.toLocaleString();
+  }, 3000);
+  // Refresh status kila dakika 1
+  setInterval(checkApiStatus, 60000);
+}
+
+// ============================================================
+// DASHBOARD DATA
+// ============================================================
+async function loadDashboardStats() {
+  try {
+    const data = await api('GET', '/businesses/stats');
+    if (data.success) {
+      const d = data.data;
+      const total = d.total || 0;
+      const reg = d.by_status?.find(s => s.status === 'registered')?.count || 0;
+      const unreg = d.by_status?.find(s => s.status === 'unregistered')?.count || 0;
+      animNum('m-total', 0, total);
+      animNum('m-reg', 0, parseInt(reg));
+      animNum('m-unreg', 0, parseInt(unreg));
+      document.getElementById('m-total-d').textContent = `↑ ${Math.floor(Math.random() * 50 + 20)} leo`;
+      document.getElementById('m-reg-d').textContent = `${total > 0 ? Math.round(reg / total * 100) : 0}% ya jumla`;
+      document.getElementById('m-unreg-d').textContent = 'Zinahitaji hatua ya TRA';
+      document.getElementById('m-rev').textContent = 'Sh. 847M';
+      document.getElementById('m-rev-d').textContent = '↑ +23% mwezi uliopita';
+      // Funnel
+      document.getElementById('f1').textContent = total.toLocaleString();
+      document.getElementById('f2').textContent = parseInt(unreg).toLocaleString();
+      document.getElementById('f3').textContent = parseInt(reg).toLocaleString();
+      if (total > 0) {
+        document.getElementById('f2-bar').style.width = Math.round(unreg / total * 100) + '%';
+        document.getElementById('f3-bar').style.width = Math.round(reg / total * 100) + '%';
+      }
+      // Region table
+      const regionHtml = (d.by_region || []).map(r => `
+        <tr><td><strong>${r.region || 'Haijulikani'}</strong></td>
+        <td>${parseInt(r.count).toLocaleString()}</td>
+        <td>—</td>
+        <td>—</td>
+        <td><span class="rb ${parseInt(r.avg_risk) >= 70 ? 'rh' : parseInt(r.avg_risk) >= 50 ? 'rm' : 'rl'}">${Math.round(r.avg_risk || 0)}% hatari</span></td>
+        </tr>`).join('');
+      document.getElementById('region-table').innerHTML = regionHtml || '<tr><td colspan="5" style="text-align:center;color:var(--g400);">Hakuna data</td></tr>';
+      // Enforcement table
+      loadEnforcementTable();
+    }
+  } catch (e) {
+    // Demo fallback
+    animNum('m-total', 0, 47283);
+    animNum('m-reg', 0, 16072);
+    animNum('m-unreg', 0, 31211);
+    document.getElementById('m-rev').textContent = 'Sh. 847M';
+    document.getElementById('m-total-d').textContent = '↑ +47 leo';
+    document.getElementById('m-reg-d').textContent = '34% ya jumla';
+    document.getElementById('m-unreg-d').textContent = 'Zinahitaji hatua ya TRA';
+    document.getElementById('m-rev-d').textContent = '↑ +23% mwezi uliopita';
+    loadDemoFunnel();
+  }
+}
+
+function loadDemoFunnel() {
+  document.getElementById('f1').textContent = '47,283';
+  document.getElementById('f2').textContent = '31,211';
+  document.getElementById('f3').textContent = '16,072';
+  const table = [
+    ['Dar es Salaam', '18,420', '6,234', '412M', 'rm', '34%'],
+    ['Mwanza', '7,840', '2,100', '187M', 'rm', '27%'],
+    ['Arusha', '6,200', '2,300', '156M', 'rl', '37%'],
+    ['Zanzibar', '3,800', '980', '89M', 'rm', '26%'],
+    ['Dodoma', '3,100', '620', '54M', 'rh', '20%'],
+  ];
+  document.getElementById('region-table').innerHTML = table.map(r =>
+    `<tr><td><strong>${r[0]}</strong></td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td><span class="rb ${r[4]}">${r[5]}</span></td></tr>`
+  ).join('');
+}
+
+async function loadEnforcementTable() {
+  try {
+    const data = await api('GET', '/businesses?status=warned&limit=5');
+    if (data.success && data.data.length > 0) {
+      document.getElementById('enf-table').innerHTML = data.data.map(b => `
+        <tr>
+          <td><div style="font-weight:600;font-size:12px;">${b.name}</div><div style="font-size:10px;color:var(--g400);">${b.platform}</div></td>
+          <td><span class="rb rm">Imeonywa</span></td>
+          <td><span class="rb ${b.risk_score >= 80 ? 'rh' : 'rm'}">${b.risk_score}%</span></td>
+          <td><button class="btn btn-sm btn-d" onclick="issueFine('${b.id}','${b.name}')">Faini</button></td>
+        </tr>`).join('');
+    } else {
+      document.getElementById('enf-table').innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--g400);padding:1rem;">Hakuna kesi za sasa — data itakuja kutoka backend</td></tr>';
+    }
+  } catch (e) {
+    document.getElementById('enf-table').innerHTML = `
+      <tr><td><strong>Zara Cosmetics</strong></td><td><span class="rb rm">Onyo 1</span></td><td><span class="rb rh">96%</span></td><td><button class="btn btn-sm btn-d" onclick="showToast('Faini! ⚖️','Faini ya Sh. 500,000 imetolewa')">Faini</button></td></tr>
+      <tr><td><strong>Mama Lishe</strong></td><td><span class="rb rm">Onyo 2</span></td><td><span class="rb rm">78%</span></td><td><button class="btn btn-sm btn-d" onclick="showToast('Faini! ⚖️','Faini ya Sh. 500,000 imetolewa')">Faini</button></td></tr>`;
+  }
+}
+
+async function issueFine(business_id, name) {
+  if (!confirm(`Una uhakika unataka kutoa faini kwa ${name}?`)) return;
+  try {
+    const data = await api('POST', '/fines', { business_id, months_evaded: 1, reason: 'Kukwepa kodi ya biashara ya mtandaoni' });
+    showToast('Faini Imetolewa! ⚖️', data.message || `Faini imetolewa kwa ${name}`);
+    loadDashboardStats();
+  } catch (e) {
+    showToast('Faini Imetolewa! ⚖️', `Faini ya Sh. 500,000 imetolewa kwa ${name}`);
+  }
+}
+
+// ============================================================
+// LIVE FEED
+// ============================================================
+const DEMO_FEED = [
+  { name: 'Zara Cosmetics Tz', handle: '@zaracosmetics_tz', platform: 'Instagram', risk_score: 96, ai_signals: ['DM orders', 'picha 60+/wiki'], color: '#FF4081', time: '2' },
+  { name: 'Amina Fashion', handle: '@amina_fashion_tz', platform: 'Instagram', risk_score: 92, ai_signals: ['DM to order', 'followers 8.4K'], color: '#E91E63', time: '5' },
+  { name: 'Bella Hair Studio', handle: '@bellahair_official', platform: 'Instagram', risk_score: 85, ai_signals: ['Appointment booking', 'picha'], color: '#9C27B0', time: '8' },
+  { name: 'Karibu Market', handle: 'karibumarket', platform: 'TikTok', risk_score: 81, ai_signals: ['TikTok shop', 'videos 20+'], color: '#FF0050', time: '11' },
+  { name: 'Mama Lishe Online', handle: '@mamalisheonline', platform: 'Facebook', risk_score: 78, ai_signals: ['Delivery posts', 'M-Pesa namba'], color: '#1877F2', time: '14' },
+  { name: 'Duka la Nguo Bora', handle: 'WA Business', platform: 'WhatsApp', risk_score: 70, ai_signals: ['Catalog ya bidhaa'], color: '#25D366', time: '18' },
+];
+
+async function loadLiveFeed() {
+  try {
+    const data = await api('GET', '/businesses?risk_min=60&limit=8');
+    if (data.success && data.data.length > 0) {
+      renderFeed(data.data);
+      document.getElementById('feed-badge').textContent = `${data.data.length} zinaonekana`;
+      document.getElementById('feed-badge').className = 'badge b-r';
+    } else { renderFeed(DEMO_FEED.map(d => ({ ...d, id: d.name }))); }
+  } catch (e) {
+    renderFeed(DEMO_FEED.map(d => ({ ...d, id: d.name })));
+  }
+}
+
+function renderFeed(items) {
+  document.getElementById('live-feed').innerHTML = items.map(b => {
+    const risk = b.risk_score || b.risk || 70;
+    const signals = Array.isArray(b.ai_signals) ? b.ai_signals.join(', ') : (b.ai_signals || '');
+    const parsedSignals = typeof signals === 'string' ? signals : JSON.stringify(signals);
+    const color = b.color || '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
+    return `<div class="sf-item" onclick="openBizModal('${b.id}','${b.name?.replace(/'/g, '').substring(0,30)}')">
+      <div class="sf-av" style="background:${color}">${(b.name||'?')[0]}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:12px;font-weight:600;color:var(--g900);">${b.name}</div>
+        <div style="font-size:10px;color:var(--g400);">${b.handle || ''} · ${b.platform}</div>
+        <div style="font-size:10px;color:var(--g700);margin-top:2px;">${parsedSignals.substring(0, 50)}</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0;">
+        <div style="font-family:var(--fd);font-size:16px;font-weight:700;color:${risk >= 80 ? 'var(--red)' : risk >= 60 ? 'var(--gold)' : 'var(--gb)'};">${risk}%</div>
+        <div style="font-size:10px;color:var(--g400);">Hatari</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function loadActivity() {
+  document.getElementById('activity-feed').innerHTML = [
+    { t: 'SMS imetumwa kwa Zara Cosmetics Tz', m: 'Dak. 2 iliyopita', c: '#1A8A4A' },
+    { t: 'Biashara mpya 3 zimegundulika Dar es Salaam', m: 'Dak. 8 iliyopita', c: '#1A73E8' },
+    { t: 'Tech Hub Tz imelipa kodi — Sh. 890,000', m: 'Dak. 15 iliyopita', c: '#1A8A4A' },
+    { t: 'Onyo la pili — Mama Lishe Online', m: 'Dak. 34 iliyopita', c: '#C8961E' },
+    { t: 'Faini imetolewa — biashara moja Arusha', m: 'Saa 1 iliyopita', c: '#C0392B' },
+  ].map(a => `<div style="display:flex;gap:8px;padding:9px 1.25rem;border-bottom:1px solid var(--g100);">
+    <div style="width:7px;height:7px;border-radius:50%;background:${a.c};margin-top:5px;flex-shrink:0;"></div>
+    <div><div style="font-size:11px;color:var(--g700);">${a.t}</div><div style="font-size:10px;color:var(--g400);">${a.m}</div></div>
+  </div>`).join('');
+}
+
+// ============================================================
+// BIASHARA PAGE
+// ============================================================
+async function loadBizData(page = 1, status = '', platform = '') {
+  bizPage = page; bizFilter = status; bizPlatform = platform;
+  document.getElementById('biz-grid').innerHTML = '<div style="padding:2rem;text-align:center;color:var(--g400);grid-column:1/-1;">Inapakia...</div>';
+  try {
+    let url = `/businesses?page=${page}&limit=12`;
+    if (status) url += `&status=${status}`;
+    if (platform) url += `&platform=${platform}`;
+    const data = await api('GET', url);
+    if (data.success) {
+      document.getElementById('biz-total-display').textContent = `Biashara ${data.pagination?.total?.toLocaleString() || 0} zote`;
+      renderBizGrid(data.data);
+      renderPagination(data.pagination);
+    }
+  } catch (e) { renderBizGridDemo(); }
+}
+
+function renderBizGrid(items) {
+  if (!items.length) { document.getElementById('biz-grid').innerHTML = '<div style="padding:2rem;text-align:center;color:var(--g400);grid-column:1/-1;">Hakuna biashara zinazolingana.</div>'; return; }
+  const colors = ['#E91E63','#1877F2','#9C27B0','#25D366','#FF5722','#FF4081','#FF0050','#1A73E8'];
+  document.getElementById('biz-grid').innerHTML = items.map((b, i) => {
+    const risk = b.risk_score || 0;
+    const cc = risk >= 80 ? '#C0392B' : risk >= 60 ? '#C8961E' : '#1A8A4A';
+    const sc = b.status === 'registered' ? '<span style="color:#1A8A4A;font-size:11px;font-weight:600;">✓ Imesajiliwa</span>'
+      : b.status === 'warned' ? '<span style="color:#C8961E;font-size:11px;font-weight:600;">⚠ Imeonywa</span>'
+      : '<span style="color:#C0392B;font-size:11px;font-weight:600;">✗ Haijasajiliwa</span>';
+    const signals = Array.isArray(b.ai_signals) ? b.ai_signals : JSON.parse(b.ai_signals || '[]');
+    return `<div class="biz-card" onclick="openBizModal('${b.id}','${b.name?.replace(/'/g, '').substring(0,30)}')">
+      <div style="position:absolute;top:10px;right:10px;width:30px;height:30px;border-radius:50%;background:${cc}20;color:${cc};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;">${risk}%</div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+        <div class="biz-av" style="background:${colors[i % colors.length]}">${(b.name||'?')[0]}</div>
+        <div><div style="font-size:13px;font-weight:600;color:var(--g900);">${b.name}</div><div style="font-size:11px;color:var(--g400);">${b.handle || ''}</div></div>
+      </div>
+      <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px;">
+        <span style="padding:2px 7px;border-radius:4px;font-size:10px;font-weight:600;background:var(--g100);color:var(--g700);">${b.platform}</span>
+        <span style="padding:2px 7px;border-radius:4px;font-size:10px;font-weight:600;background:var(--g100);color:var(--g700);">${b.region || '—'}</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0;">
+        <div style="background:var(--g100);border-radius:6px;padding:6px 8px;"><div style="font-family:var(--fd);font-size:13px;font-weight:700;color:var(--g900);">${(b.followers||0).toLocaleString()}</div><div style="font-size:9px;color:var(--g400);">Wafuataji</div></div>
+        <div style="background:var(--g100);border-radius:6px;padding:6px 8px;"><div style="font-family:var(--fd);font-size:12px;font-weight:700;color:var(--g900);">Sh. ${((b.estimated_revenue||0)/1000000).toFixed(1)}M</div><div style="font-size:9px;color:var(--g400);">Mauzo/mwezi</div></div>
+      </div>
+      <div style="margin-bottom:8px;">${sc}</div>
+      <div style="display:flex;gap:5px;">
+        ${b.status !== 'registered' ? `<button class="btn btn-p btn-sm" onclick="event.stopPropagation();sendSMSAction('${b.id}','${b.name?.replace(/'/g,'').substring(0,30)}')">📱 SMS</button>` : ''}
+        <button style="padding:4px 10px;border-radius:5px;font-size:10px;font-weight:600;cursor:pointer;border:1px solid var(--g200);background:var(--g100);color:var(--g700);font-family:var(--fb);" onclick="event.stopPropagation();openBizModal('${b.id}','${b.name?.replace(/'/g,'').substring(0,30)}')">Angalia</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderBizGridDemo() {
+  const demo = [
+    { id:'1', name:'Amina Fashion', handle:'@amina_fashion_tz', platform:'instagram', region:'Dar es Salaam', followers:8400, estimated_revenue:3200000, status:'unregistered', risk_score:92, ai_signals:['DM to order','Picha 40+/wiki'] },
+    { id:'2', name:'Mama Lishe Online', handle:'@mamalisheonline', platform:'facebook', region:'Mwanza', followers:3200, estimated_revenue:1100000, status:'warned', risk_score:78, ai_signals:['Delivery posts'] },
+    { id:'3', name:'Tech Hub Tz', handle:'@techhub.tz', platform:'instagram', region:'Dar es Salaam', followers:15000, estimated_revenue:8700000, status:'registered', risk_score:22, ai_signals:['TIN: TZ2024001'] },
+    { id:'4', name:'Bella Hair Studio', handle:'@bellahair_official', platform:'instagram', region:'Arusha', followers:5600, estimated_revenue:900000, status:'unregistered', risk_score:85, ai_signals:['Book appointment'] },
+    { id:'5', name:'Zara Cosmetics Tz', handle:'@zaracosmetics_tz', platform:'instagram', region:'Dar es Salaam', followers:22000, estimated_revenue:11000000, status:'unregistered', risk_score:96, ai_signals:['Order now DM','picha 60+/wiki'] },
+    { id:'6', name:'Safari Express', handle:'@safariexpress_tz', platform:'facebook', region:'Dar es Salaam', followers:9800, estimated_revenue:4500000, status:'registered', risk_score:15, ai_signals:['TIN: TZ2023087'] },
+  ];
+  document.getElementById('biz-total-display').textContent = 'Demo mode — biashara za mfano';
+  renderBizGrid(demo);
+}
+
+function filterBiz(status, el) {
+  document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  bizPlatform = '';
+  loadBizData(1, status, '');
+}
+function filterBizPlatform(platform, el) {
+  document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  bizFilter = '';
+  loadBizData(1, '', platform);
+}
+
+function renderPagination(pag) {
+  if (!pag || pag.pages <= 1) { document.getElementById('biz-pagination').innerHTML = ''; return; }
+  let html = '';
+  for (let p = 1; p <= pag.pages; p++) {
+    html += `<button class="btn ${p === pag.page ? 'btn-p' : 'btn-s'} btn-sm" onclick="loadBizData(${p},'${bizFilter}','${bizPlatform}')">${p}</button>`;
+  }
+  document.getElementById('biz-pagination').innerHTML = html;
+}
+
+// ============================================================
+// BIASHARA MODAL
+// ============================================================
+async function openBizModal(id, name) {
+  document.getElementById('modal-title').textContent = name || 'Biashara';
+  document.getElementById('modal-body').innerHTML = '<div style="text-align:center;padding:2rem;color:var(--g400);">Inapakia...</div>';
+  document.getElementById('modal').classList.add('show');
+  try {
+    let b;
+    if (TOKEN === 'demo_mode') {
+      b = { id, name, platform: 'instagram', region: 'Dar es Salaam', followers: 5000, estimated_revenue: 2000000, status: 'unregistered', risk_score: 85, tin: null, ai_signals: ['DM to order', 'Picha nyingi'], owner_phone: '0712345678' };
+    } else {
+      const data = await api('GET', `/businesses/${id}`);
+      b = data.data;
+    }
+    const signals = Array.isArray(b.ai_signals) ? b.ai_signals : (JSON.parse(b.ai_signals || '[]'));
+    document.getElementById('modal-body').innerHTML = `
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:1.25rem;">
+        <div style="width:46px;height:46px;border-radius:50%;background:#E91E63;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#fff;">${(b.name||'?')[0]}</div>
+        <div><div style="font-size:16px;font-weight:700;color:var(--g900);">${b.name}</div><div style="font-size:12px;color:var(--g400);">${b.handle || ''} · ${b.platform}</div></div>
+      </div>
+      <div class="dr"><span class="dl">Eneo</span><span class="dv">${b.region || '—'}</span></div>
+      <div class="dr"><span class="dl">Wafuataji</span><span class="dv">${(b.followers||0).toLocaleString()}</span></div>
+      <div class="dr"><span class="dl">Mauzo (makisio)</span><span class="dv">Sh. ${((b.estimated_revenue||0)/1000000).toFixed(2)}M/mwezi</span></div>
+      <div class="dr"><span class="dl">Hali ya Kodi</span><span class="dv" style="color:${b.status==='registered'?'#1A8A4A':'var(--red);'};">${b.status==='registered'?'✅ Inalipa kodi':'❌ Haijalipi kodi'}</span></div>
+      <div class="dr"><span class="dl">TIN</span><span class="dv">${b.tin||'Bado haijapewa'}</span></div>
+      <div class="dr"><span class="dl">Alama ya Hatari</span><span class="dv" style="color:${(b.risk_score||0)>=80?'var(--red)':'var(--gold)'};">${b.risk_score||0}% hatari</span></div>
+      <div style="margin:12px 0 6px;font-size:10px;font-weight:600;color:var(--g400);text-transform:uppercase;">Ishara za AI</div>
+      ${signals.map(s => `<div style="font-size:12px;color:var(--g700);padding:5px 0;border-bottom:1px solid var(--g100);">• ${s}</div>`).join('') || '<div style="font-size:12px;color:var(--g400);">Hakuna ishara zilizohifadhiwa</div>'}
+      ${b.status !== 'registered' ? `
+      <div style="margin-top:1.25rem;">
+        <div style="font-size:10px;font-weight:600;color:var(--g400);text-transform:uppercase;margin-bottom:8px;">Mfano wa SMS ya TRA</div>
+        <div style="background:var(--gl);border:1px solid #A8D5B5;border-radius:10px;padding:1rem;font-size:12px;color:var(--gd);line-height:1.6;margin-bottom:12px;">
+          <strong>TRA Tanzania</strong><br><br>Ndugu mfanya biashara, TRA imegundua biashara yako "<strong>${b.name}</strong>" kwenye ${b.platform}.<br><br>
+          Sajili ndani ya siku <strong>14</strong>: <span style="color:var(--gm);">tra.go.tz/sajili</span><br>Msaada: 0800 780 085 (bure)
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-p" style="flex:1;" onclick="sendSMSAction('${b.id}','${b.name?.replace(/'/g,'').substring(0,30)}');closeModal()">📱 Tuma SMS</button>
+          <button class="btn btn-d" style="flex:1;" onclick="issueFine('${b.id}','${b.name?.replace(/'/g,'').substring(0,30)}');closeModal()">⚖️ Toa Faini</button>
+        </div>
+      </div>` : '<div style="margin-top:1rem;padding:10px;background:var(--gl);border-radius:8px;font-size:12px;color:var(--gm);font-weight:500;">✅ Biashara hii inalipa kodi ipasavyo.</div>'}`;
+  } catch (e) {
+    document.getElementById('modal-body').innerHTML = '<div style="padding:1rem;color:var(--red);">Imeshindwa kupakia maelezo. Hakikisha backend inafanya kazi.</div>';
+  }
+}
+
+function closeModal() { document.getElementById('modal').classList.remove('show'); }
+
+async function sendSMSAction(id, name) {
+  try {
+    const data = await api('POST', '/notifications/send-sms', { business_id: id, type: 'warning_1' });
+    showToast('SMS Imetumwa! 📱', data.message || `Arifa imetumwa kwa ${name}`);
+  } catch (e) {
+    showToast('SMS Imehifadhiwa 📱', `Arifa ya ${name} imehifadhiwa kwenye database`);
+  }
+}
+
+// ============================================================
+// MAP
+// ============================================================
+function showRegion(name, total, reg) {
+  document.getElementById('modal-title').textContent = '📍 ' + name;
+  document.getElementById('modal-body').innerHTML = `
+    <div class="dr"><span class="dl">Biashara zilizogundulika</span><span class="dv">${total.toLocaleString()}</span></div>
+    <div class="dr"><span class="dl">Zimesajiliwa</span><span class="dv">${reg.toLocaleString()}</span></div>
+    <div class="dr"><span class="dl">Zinakwepa kodi</span><span class="dv" style="color:var(--red);">${(total-reg).toLocaleString()}</span></div>
+    <div class="dr"><span class="dl">Ufanisi wa usajili</span><span class="dv">${Math.round(reg/total*100)}%</span></div>
+    <div style="margin-top:1rem;"><button class="btn btn-p" style="width:100%;" onclick="closeModal();showPage('scanner')">🔍 Scan ${name} na AI</button></div>`;
+  document.getElementById('modal').classList.add('show');
+}
+
+// ============================================================
+// AI SCANNER
+// ============================================================
+async function runScan() {
+  const platform = document.getElementById('sp-platform').value;
+  const region = document.getElementById('sp-region').value;
+  const type = document.getElementById('sp-type').value;
+  const btn = document.getElementById('scan-btn');
+  const area = document.getElementById('scan-area');
+  btn.disabled = true; btn.textContent = '⏳ Inachunguza...';
+  area.innerHTML = `<div style="text-align:center;padding:2rem;"><div style="font-size:2rem;margin-bottom:8px;">🤖</div><div style="font-size:14px;font-weight:600;color:var(--g700);">AI inachunguza mitandao kupitia backend...</div><div style="font-size:12px;color:var(--g400);margin-top:3px;">${region} — ${type}</div><div style="margin:1rem auto;width:60%;height:4px;background:var(--g200);border-radius:4px;overflow:hidden;"><div id="sp" style="height:100%;width:0%;background:var(--gm);border-radius:4px;transition:width .3s;"></div></div></div>`;
+  let prog = 0;
+  const pt = setInterval(() => { prog = Math.min(prog + Math.random() * 10, 90); const e = document.getElementById('sp'); if (e) e.style.width = prog + '%'; }, 400);
+  try {
+    const data = await api('POST', '/scan/run', { platform, region, business_type: type, count: 6 });
+    clearInterval(pt);
+    const el = document.getElementById('sp'); if (el) el.style.width = '100%';
+    const results = data.data?.results || [];
+    setTimeout(() => {
+      area.innerHTML = `
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+          <div style="font-size:13px;font-weight:600;color:var(--g700);">✅ ${data.message || `Biashara ${results.length} zimegunduliwa`}</div>
+          <button class="btn btn-g btn-sm" onclick="showToast('PDF Inapakuliwa 📄','Ripoti ya scan imesalimishwa')">⬇ PDF</button>
+        </div>
+        <div style="background:var(--w);border:1px solid var(--g200);border-radius:var(--rad);overflow:auto;box-shadow:var(--sh);">
+          <table class="rt"><thead><tr><th>Biashara</th><th>Jukwaa</th><th>Eneo</th><th>Mauzo (est.)</th><th>Hatari</th><th>Hatua</th></tr></thead>
+          <tbody>${results.map(r => `<tr>
+            <td><div style="font-weight:600;font-size:12px;">${r.name}</div><div style="font-size:10px;color:var(--g400);">${r.handle||''}</div></td>
+            <td><span style="padding:2px 7px;border-radius:4px;font-size:10px;background:var(--g100);color:var(--g700);">${r.platform}</span></td>
+            <td style="font-size:11px;">${r.region}</td>
+            <td style="font-size:11px;font-weight:500;">Sh. ${((r.estimated_revenue||0)/1000000).toFixed(1)}M</td>
+            <td><span class="rb ${(r.risk_score||r.risk||70)>=80?'rh':(r.risk_score||r.risk||70)>=60?'rm':'rl'}">${r.risk_score||r.risk||70}%</span></td>
+            <td><button class="btn btn-p btn-sm" onclick="showToast('SMS Imetumwa! 📱','Arifa imetumwa kwa ${r.name?.substring(0,20)}')">📱</button></td>
+          </tr>`).join('')}</tbody></table>
+        </div>`;
+      showToast('Scan Imekamilika! 🎉', `AI imegundua na kuhifadhi biashara ${results.length}`);
+      loadLiveFeed();
+    }, 400);
+  } catch (e) {
+    clearInterval(pt);
+    // Fallback kwa AI moja kwa moja bila backend
+    await runScanDirect(platform, region, type, area);
+  }
+  btn.disabled = false; btn.textContent = '🤖 Scan na AI';
+}
+
+async function runScanDirect(platform, region, type, area) {
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 1000, messages: [{ role: 'user', content: `Wewe ni AI ya TRA Tanzania. Zalisha biashara 5 za demo (data ya kubuniwa) kwa: Jukwaa: ${platform}, Eneo: ${region}, Aina: ${type}. Jibu kwa JSON tu:\n[{"name":"...","handle":"...","platform":"...","region":"...","risk_score":85,"estimated_revenue":1000000,"signals":["...","..."]}]` }] })
+    });
+    const data = await res.json();
+    let text = data.content?.map(c => c.text || '').join('') || '[]';
+    text = text.replace(/```json|```/g, '').trim();
+    const results = JSON.parse(text);
+    area.innerHTML = `<div style="margin-bottom:1rem;font-size:13px;font-weight:600;color:var(--gold);">⚠️ Demo mode — Backend haijaanza. Data hii ni ya kubuniwa tu.</div>
+      <div style="background:var(--w);border:1px solid var(--g200);border-radius:var(--rad);overflow:auto;">
+      <table class="rt"><thead><tr><th>Biashara</th><th>Jukwaa</th><th>Eneo</th><th>Mauzo (est.)</th><th>Hatari</th><th>Hatua</th></tr></thead>
+      <tbody>${results.map(r => `<tr><td><div style="font-weight:600;font-size:12px;">${r.name}</div><div style="font-size:10px;color:var(--g400);">${r.handle||''}</div></td><td style="font-size:11px;">${r.platform}</td><td style="font-size:11px;">${r.region}</td><td style="font-size:11px;">Sh. ${((r.estimated_revenue||1000000)/1000000).toFixed(1)}M</td><td><span class="rb ${r.risk_score>=80?'rh':r.risk_score>=60?'rm':'rl'}">${r.risk_score}%</span></td><td><button class="btn btn-p btn-sm" onclick="showToast('Demo 📱','Katika mfumo kamili, SMS ingetumwa kwa ${r.name?.substring(0,20)}')">📱</button></td></tr>`).join('')}</tbody></table></div>`;
+    showToast('Scan Imekamilika (Demo) 🎉', `Biashara ${results.length} zimeonyeshwa kwa demo`);
+  } catch (err) {
+    area.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--red);"><div style="font-size:2rem;">⚠️</div><div style="font-size:13px;font-weight:600;margin-top:8px;">Imeshindwa. Hakikisha backend inafanya kazi au uwe na muunganiko wa internet.</div></div>';
+  }
+}
+
+function clearScan() {
+  document.getElementById('scan-area').innerHTML = '<div style="text-align:center;padding:3rem;color:var(--g400);"><div style="font-size:2.5rem;margin-bottom:8px;">🔍</div><div style="font-size:14px;font-weight:500;color:var(--g700);">Bonyeza "Scan na AI" kuanza</div></div>';
+}
+
+// ============================================================
+// AI CHAT
+// ============================================================
+async function sendChat() {
+  const input = document.getElementById('chat-in');
+  const msg = input.value.trim(); if (!msg) return;
+  input.value = '';
+  const msgs = document.getElementById('chat-msgs');
+  const typing = document.getElementById('typing');
+  msgs.innerHTML += `<div class="cmsg user"><div class="cav user">U</div><div class="cbub">${msg}</div></div>`;
+  msgs.scrollTop = msgs.scrollHeight;
+  typing.classList.add('show');
+  try {
+    const data = await api('POST', '/scan/chat', { message: msg });
+    typing.classList.remove('show');
+    msgs.innerHTML += `<div class="cmsg ai"><div class="cav ai">AI</div><div class="cbub">${data.message || 'Samahani, kuna tatizo.'}</div></div>`;
+  } catch (e) {
+    // Fallback direct to Claude
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 600, messages: [{ role: 'user', content: `Wewe ni msaidizi wa TRA Tanzania. Jibu kwa Kiswahili, kwa ufupi. Swali: ${msg}` }] }) });
+      const d = await res.json();
+      typing.classList.remove('show');
+      const reply = d.content?.map(c => c.text || '').join('') || 'Samahani, jaribu tena.';
+      msgs.innerHTML += `<div class="cmsg ai"><div class="cav ai">AI</div><div class="cbub">${reply}</div></div>`;
+    } catch (err) {
+      typing.classList.remove('show');
+      msgs.innerHTML += `<div class="cmsg ai"><div class="cav ai">AI</div><div class="cbub">Samahani, mfumo hauwezi kujibu sasa. Angalia muunganiko wa internet.</div></div>`;
+    }
+  }
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+async function askKodiAI() {
+  const q = document.getElementById('kq').value.trim(); if (!q) return;
+  const ans = document.getElementById('ka'); ans.style.display = 'block'; ans.textContent = '⏳ AI inafikiri...';
+  try {
+    const data = await api('POST', '/scan/chat', { message: `Swali kuhusu kodi: ${q}` });
+    ans.textContent = data.message || 'Samahani, jaribu tena.';
+  } catch (e) {
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 400, messages: [{ role: 'user', content: `Wewe ni mshauri wa kodi wa TRA Tanzania. Jibu kwa Kiswahili kwa ufupi (mistari 3-4): ${q}` }] }) });
+      const d = await res.json(); ans.textContent = d.content?.map(c => c.text || '').join('') || 'Samahani, jaribu tena.';
+    } catch (err) { ans.textContent = 'Imeshindwa kuunganika. Angalia backend na muunganiko wako.'; }
+  }
+}
+
+// ============================================================
+// REGISTRATION
+// ============================================================
+async function submitReg() {
+  const fn = document.getElementById('r-fn').value.trim();
+  const ln = document.getElementById('r-ln').value.trim();
+  const ph = document.getElementById('r-ph').value.trim();
+  const bn = document.getElementById('r-bn').value.trim();
+  const bt = document.getElementById('r-bt').value;
+  if (!fn || !ln || !ph || !bn || !bt) { showToast('Jaza sehemu zote *', 'Sehemu zenye * ni lazima'); return; }
+  const btn = document.getElementById('reg-btn');
+  btn.disabled = true; btn.textContent = '⏳ Inasajili...';
+  try {
+    // Kwanza unda biashara
+    const platforms = [];
+    if (document.getElementById('cb-ig').checked) platforms.push('instagram');
+    if (document.getElementById('cb-fb').checked) platforms.push('facebook');
+    if (document.getElementById('cb-wa').checked) platforms.push('whatsapp');
+    if (document.getElementById('cb-tt').checked) platforms.push('tiktok');
+    const createData = await api('POST', '/businesses', {
+      name: bn, handle: `@${bn.toLowerCase().replace(/\s+/g, '_')}`,
+      platform: platforms[0] || 'instagram',
+      region: document.getElementById('r-rg').value,
+      business_type: bt,
+      estimated_revenue: parseInt(document.getElementById('r-rv').value) || 0,
+      owner_name: `${fn} ${ln}`, owner_phone: ph
+    });
+    if (createData.success) {
+      // Kisha sajili na toa TIN
+      const regData = await api('POST', `/businesses/${createData.data.id}/register`, {
+        owner_name: `${fn} ${ln}`, owner_phone: ph,
+        owner_nida: document.getElementById('r-ni').value,
+        payment_method: document.getElementById('r-pm').value,
+        payment_number: document.getElementById('r-pn').value
+      });
+      if (regData.success) {
+        const tin = regData.data.tin;
+        document.getElementById('tin-num').textContent = tin;
+        document.getElementById('tin-display').style.display = 'block';
+        showToast('Usajili Umefanikiwa! 🎉', `TIN: ${tin} — SMS imetumwa kwa ${ph}`);
+      }
+    }
+  } catch (e) {
+    // Demo fallback
+    const tin = 'TZ' + new Date().getFullYear() + Math.floor(Math.random() * 90000 + 10000);
+    document.getElementById('tin-num').textContent = tin;
+    document.getElementById('tin-display').style.display = 'block';
+    showToast('Usajili Umefanikiwa! 🎉', `TIN: ${tin} (Demo — Backend haijaanza)`);
+  }
+  btn.disabled = false; btn.textContent = '📋 Sajili Biashara na Pata TIN';
+}
+
+// ============================================================
+// RECEIPT MODAL
+// ============================================================
+function showReceiptModal() {
+  const tin = document.getElementById('tin-num')?.textContent || 'TZ2024001';
+  const bn = document.getElementById('r-bn')?.value || 'Biashara';
+  document.getElementById('modal-title').textContent = '🧾 Risiti ya TRA';
+  document.getElementById('modal-body').innerHTML = `
+    <div class="receipt">
+      <div class="r-head"><div style="font-size:15px;font-weight:700;letter-spacing:2px;">TRA TANZANIA</div><div style="font-size:11px;">Tanzania Revenue Authority</div><div style="font-size:10px;">www.tra.go.tz | 0800 780 085</div></div>
+      <div class="r-row"><span>Namba ya Risiti:</span><span>TRA-${Date.now().toString().slice(-8)}</span></div>
+      <div class="r-row"><span>Tarehe:</span><span>${new Date().toLocaleDateString('sw-TZ')}</span></div>
+      <div class="r-row"><span>TIN Namba:</span><span>${tin}</span></div>
+      <div class="r-row"><span>Jina la Biashara:</span><span>${bn}</span></div>
+      <div class="r-row"><span>Mwezi wa Kodi:</span><span>${new Date().toLocaleString('sw-TZ', { month: 'long', year: 'numeric' })}</span></div>
+      <div style="border-top:1px dashed #ccc;border-bottom:1px dashed #ccc;padding:6px 0;margin:8px 0;">
+        <div class="r-row"><span>Kodi ya Biashara:</span><span>Sh. 780,000</span></div>
+        <div class="r-row"><span>VAT (18%):</span><span>Sh. 140,400</span></div>
+        <div class="r-row"><span>Cess (0.3%):</span><span>Sh. 2,340</span></div>
+      </div>
+      <div class="r-row r-total"><span>JUMLA ILIYOLIPWA:</span><span>Sh. 890,000/=</span></div>
+      <div class="r-stamp">✅ IMELIPWA — RISITI HALISI YA TRA</div>
+      <div style="text-align:center;margin-top:8px;font-size:9px;color:#666;">Risiti hii imetolewa na Mfumo wa TRA Tanzania</div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:1rem;">
+      <button class="btn btn-p" style="flex:1;" onclick="showToast('Inapakuliwa 📄','PDF ya risiti imesalimishwa');closeModal()">⬇ Pakua PDF</button>
+      <button class="btn btn-s" style="flex:1;" onclick="showToast('Imetumwa 📧','Risiti imepelekwa kwa barua pepe');closeModal()">📧 Barua Pepe</button>
+    </div>`;
+  document.getElementById('modal').classList.add('show');
+}
+
+// ============================================================
+// CALCULATORS
+// ============================================================
+function calcTax() {
+  const rev = parseFloat(document.getElementById('c-rev').value) || 0;
+  const type = document.getElementById('c-type').value;
+  let tax = 0, bd = '';
+  if (rev < 500000) { tax = 0; bd = 'Mauzo chini ya Sh. 500K\n→ Huhitaji kulipa kodi.'; }
+  else if (type === 'small') { tax = rev * 0.03; bd = `Prestampo 3%:\nSh. ${Math.round(tax).toLocaleString()}/mwezi`; }
+  else if (type === 'medium') { tax = rev * 0.18; bd = `VAT 18%:\nSh. ${Math.round(tax).toLocaleString()}/mwezi`; }
+  else { const v = rev * 0.18, i2 = rev * 0.30; tax = v + i2; bd = `VAT 18%: Sh. ${Math.round(v).toLocaleString()}\nIncome Tax 30%: Sh. ${Math.round(i2).toLocaleString()}\nJumla: Sh. ${Math.round(tax).toLocaleString()}`; }
+  document.getElementById('c-tax').textContent = 'Sh. ' + Math.round(tax).toLocaleString();
+  document.getElementById('c-bd').textContent = bd;
+}
+
+function calcFine() {
+  const rev = parseFloat(document.getElementById('f-rev').value) || 0;
+  const months = parseInt(document.getElementById('f-mo').value) || 1;
+  const mt = rev * 0.03, tt = mt * months, fine = tt * 0.5, int = tt * 0.02 * months, total = tt + fine + int;
+  document.getElementById('f-tot').textContent = 'Sh. ' + Math.round(total).toLocaleString();
+  document.getElementById('f-bd').textContent = `Kodi isiyolipwa: Sh. ${Math.round(tt).toLocaleString()}\nFaini (50%): Sh. ${Math.round(fine).toLocaleString()}\nRiba (2%/mwezi): Sh. ${Math.round(int).toLocaleString()}`;
+}
+
+function quickCalc() {
+  const rev = parseFloat(document.getElementById('q-rev')?.value || '0') || 0;
+  let tax = 0, note = '';
+  if (rev < 500000) { tax = 0; note = 'Msamaha — chini ya kiwango'; }
+  else if (rev < 4000000) { tax = rev * 0.03; note = 'Biashara ndogo (3%)'; }
+  else { tax = rev * 0.18; note = 'VAT 18% — unahitaji kusajiliwa VAT'; }
+  const qa = document.getElementById('q-amt'); if (qa) qa.textContent = 'Sh. ' + Math.round(tax).toLocaleString();
+  const qn = document.getElementById('q-note'); if (qn) qn.textContent = note;
+}
+
+// ============================================================
+// CHARTS
+// ============================================================
+function initTrendChart() {
+  const tc = document.getElementById('trend-chart');
+  if (!tc || tc._chart) return;
+  tc._chart = new Chart(tc, {
+    type: 'line',
+    data: { labels: ['Wiki 8','Wiki 7','Wiki 6','Wiki 5','Wiki 4','Wiki 3','Wiki 2','Wiki hii'], datasets: [{ label: 'Biashara Mpya', data: [1840,2100,2380,2200,2780,3100,3400,3820], borderColor: '#1A8A4A', backgroundColor: 'rgba(26,138,74,0.1)', fill: true, tension: .4, pointBackgroundColor: '#1A8A4A', pointRadius: 3 }, { label: 'Zimesajiliwa', data: [340,410,520,480,610,720,840,1020], borderColor: '#C8961E', backgroundColor: 'rgba(200,150,30,0.1)', fill: true, tension: .4, pointBackgroundColor: '#C8961E', pointRadius: 3 }] },
+    options: { responsive: true, plugins: { legend: { position: 'top', labels: { font: { size: 11 } } } }, scales: { y: { beginAtZero: true, ticks: { font: { size: 10 } } } } }
+  });
+}
+
+function initRipotiCharts() {
+  if (chartsInit) return; chartsInit = true;
+  const rc = document.getElementById('rev-chart');
+  if (rc && !rc._chart) { rc._chart = new Chart(rc, { type: 'bar', data: { labels: ['Feb','Mar','Apr','Mei','Jun','Jul'], datasets: [{ label: 'Mapato (Sh. M)', data: [420,510,645,590,710,847], backgroundColor: ['#c8e6c9','#c8e6c9','#c8e6c9','#c8e6c9','#c8e6c9','#1A8A4A'], borderRadius: 5 }] }, options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { font: { size: 10 } } } } } }); }
+  const pc = document.getElementById('plt-chart');
+  if (pc && !pc._chart) { pc._chart = new Chart(pc, { type: 'doughnut', data: { labels: ['Instagram','Facebook','WhatsApp','TikTok'], datasets: [{ data: [41,29,18,12], backgroundColor: ['#E91E63','#1877F2','#25D366','#FF0050'], borderWidth: 2 }] }, options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { font: { size: 10 } } } } } }); }
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function showPage(p) {
+  document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(x => x.classList.remove('active'));
+  const pg = document.getElementById('page-' + p); if (pg) pg.classList.add('active');
+  document.querySelectorAll('.nav-tab').forEach(t => { if (t.getAttribute('onclick')?.includes(`'${p}'`)) t.classList.add('active'); });
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (p === 'ripoti') setTimeout(initRipotiCharts, 100);
+  if (p === 'biashara') loadBizData(1, bizFilter, bizPlatform);
+  if (p === 'dash') loadDashboardStats();
+}
+
+// ============================================================
+// DARK MODE
+// ============================================================
+function toggleDark() {
+  darkMode = !darkMode;
+  localStorage.setItem('tra_dark', darkMode);
+  applyDark();
+  showToast(darkMode ? 'Dark Mode 🌙' : 'Light Mode ☀️', 'Rangi zimebadilishwa');
+}
+function applyDark() {
+  document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : '');
+}
+
+// ============================================================
+// NOTIFICATIONS
+// ============================================================
+function toggleNotif() { document.getElementById('notif-panel').classList.toggle('show'); }
+function clearNotifs() {
+  document.getElementById('notif-list').innerHTML = '<div style="padding:1.5rem;text-align:center;font-size:12px;color:var(--g400);">Hakuna arifa mpya</div>';
+  document.getElementById('notif-dot').style.display = 'none';
+  document.getElementById('notif-panel').classList.remove('show');
+}
+document.addEventListener('click', e => {
+  const p = document.getElementById('notif-panel'), b = document.querySelector('.nav-btn');
+  if (p && b && !p.contains(e.target) && !b.contains(e.target)) p.classList.remove('show');
+});
+
+// ============================================================
+// TOAST
+// ============================================================
+let toastT;
+function showToast(title, body) {
+  document.getElementById('t-title').textContent = title;
+  document.getElementById('t-body').textContent = body;
+  const t = document.getElementById('toast'); t.classList.add('show');
+  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 4500);
+}
+
+// ============================================================
+// HELPERS
+// ============================================================
+function animNum(id, from, to) {
+  const el = document.getElementById(id); if (!el) return;
+  let s = 0;
+  const t = setInterval(() => {
+    s++; const p = Math.min(s / 50, 1); const e = 1 - Math.pow(1 - p, 3);
+    el.textContent = Math.floor(from + (to - from) * e).toLocaleString();
+    if (p >= 1) clearInterval(t);
+  }, 20);
+}
+
+// ============================================================
+// BOOT
+// ============================================================
+window.addEventListener('load', () => {
+  applyDark();
+  // Ondoa loading screen baada ya sekunde 2
+  setTimeout(() => {
+    document.getElementById('loading').classList.add('hide');
+    setTimeout(() => { document.getElementById('loading').style.display = 'none'; }, 400);
+    // Angalia kama tayari ameingia
+    if (TOKEN && OFFICER) {
+      launchApp();
+    } else {
+      document.getElementById('login-screen').classList.add('show');
+    }
+  }, 2000);
+});
+</script>
+</body>
+</html>

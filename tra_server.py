@@ -177,8 +177,21 @@ class H(BaseHTTPRequestHandler):
         body = self.rb() if m in ('POST','PUT') else {}
 
         try:
-            # ROOT / HEALTH
-            if url in ('', '/', '/api'):
+            # ROOT — tumikia frontend
+            if url in ('', '/'):
+                idx = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'index.html')
+                if os.path.exists(idx):
+                    body = open(idx, 'rb').read()
+                    self.send_response(200)
+                    self.send_header('Content-Type', 'text/html; charset=utf-8')
+                    self.send_header('Content-Length', len(body))
+                    for k,v in CORS.items(): self.send_header(k,v)
+                    self.end_headers()
+                    self.wfile.write(body)
+                    return
+                return self.sj(200,{'name':'TRA Digital Tax Backend','version':'1.0.0','status':'running'})
+
+            if url == '/api':
                 return self.sj(200,{'name':'TRA Digital Tax Backend','version':'1.0.0','status':'running'})
 
             if url == '/api/health':
